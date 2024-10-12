@@ -67,16 +67,19 @@ void instr_scd(N64 &n64, const Opcode &opcode)
 void instr_tlbwi(N64& n64, const Opcode &opcode)
 {
     UNUSED(n64); UNUSED(opcode);
+    instr_unknown_cop0(n64,opcode);
 }
 
 void instr_tlbp(N64& n64, const Opcode &opcode)
 {
     UNUSED(n64); UNUSED(opcode);
+    instr_unknown_cop0(n64,opcode);
 }
 
 void instr_tlbr(N64& n64, const Opcode &opcode)
 {
     UNUSED(n64); UNUSED(opcode);
+    instr_unknown_cop0(n64,opcode);
 }
 
 void instr_eret(N64& n64, const Opcode& opcode)
