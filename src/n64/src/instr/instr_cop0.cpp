@@ -74,6 +74,11 @@ void instr_tlbp(N64& n64, const Opcode &opcode)
     UNUSED(n64); UNUSED(opcode);
 }
 
+void instr_tlbr(N64& n64, const Opcode &opcode)
+{
+    UNUSED(n64); UNUSED(opcode);
+}
+
 void instr_eret(N64& n64, const Opcode& opcode)
 {
     UNUSED(opcode);

@@ -96,7 +96,7 @@ else()
 	# prevent O3 being injected
 	SET( CMAKE_CXX_FLAGS_DEBUG  "")
 	SET( CMAKE_CXX_FLAGS_RELEASE  "")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -march=native -pthread -O0 -fomit-frame-pointer -Wno-missing-braces")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -march=native -pthread -O1 -fomit-frame-pointer -Wno-missing-braces")
 endif()
 
 add_subdirectory("destoer-lib")

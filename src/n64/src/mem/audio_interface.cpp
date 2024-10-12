@@ -123,6 +123,11 @@ u32 read_ai(N64& n64, u64 addr)
     switch(addr)
     {
 
+        case AI_LENGTH:
+        {
+            return ai.length;
+        }
+
         case AI_STATUS:
         {
             return (ai.full << 0) | (ai.enabled << 25) | (ai.busy << 30) | (ai.full << 31); 

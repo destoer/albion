@@ -286,11 +286,6 @@ void instr_dmult(N64 &n64, const Opcode &opcode)
 #endif
 }
 
-void instr_break(N64 &n64, const Opcode &opcode)
-{
-    instr_unknown_r(n64,opcode);
-}
-
 void instr_div(N64 &n64, const Opcode &opcode)
 {
     // div by zero not allowed
@@ -398,7 +393,7 @@ void instr_ddivu(N64 &n64, const Opcode &opcode)
         return;   
     }
 
-    spdlog::info("{} / {}\n",s64(v1),v2);
+    //spdlog::info("{} / {}\n",s64(v1),v2);
 
     const u64 res = v1 / v2;
     const u64 remainder = v1 % v2;
@@ -431,6 +426,19 @@ void instr_xor(N64 &n64, const Opcode &opcode)
 void instr_jr(N64 &n64, const Opcode &opcode)
 {
     write_pc(n64,n64.cpu.regs[opcode.rs]);
+}
+
+void instr_break(N64& n64, const Opcode& opcode)
+{
+    UNUSED(opcode);
+
+    auto& cop0 = n64.cpu.cop0;
+    auto& status = cop0.status;
+
+    if(!status.erl && !status.exl)
+    {
+        standard_exception(n64,beyond_all_repair::BREAK); 
+    }
 }
 
 void instr_jalr(N64 &n64, const Opcode &opcode)
