@@ -1,4 +1,6 @@
 
+namespace nintendo64
+{
 
 struct SpDma
 {
@@ -7,8 +9,6 @@ struct SpDma
     u32 skip = 0;
 };
 
-namespace nintendo64
-{
 
 struct SpRegs
 {

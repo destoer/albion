@@ -38,6 +38,7 @@ struct EntryHi
     // entry hi
     u32 vpn2 = 0;
     u32 asid = 0;
+    u32 region = 0;
 };
 
 struct EntryLo

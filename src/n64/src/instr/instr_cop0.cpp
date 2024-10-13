@@ -1,3 +1,4 @@
+#include "n64/mem.h"
 #include <n64/n64.h>
 
 namespace nintendo64
@@ -60,26 +61,6 @@ void instr_scd(N64 &n64, const Opcode &opcode)
     }
 
     n64.cpu.regs[opcode.rt] = n64.cpu.cop0.ll_bit;
-}
-
-// tlb instrs
-// TODO: i think we can saftely ignore these until we actually try to access a tlb section?
-void instr_tlbwi(N64& n64, const Opcode &opcode)
-{
-    UNUSED(n64); UNUSED(opcode);
-    instr_unknown_cop0(n64,opcode);
-}
-
-void instr_tlbp(N64& n64, const Opcode &opcode)
-{
-    UNUSED(n64); UNUSED(opcode);
-    instr_unknown_cop0(n64,opcode);
-}
-
-void instr_tlbr(N64& n64, const Opcode &opcode)
-{
-    UNUSED(n64); UNUSED(opcode);
-    instr_unknown_cop0(n64,opcode);
 }
 
 void instr_eret(N64& n64, const Opcode& opcode)

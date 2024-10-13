@@ -49,3 +49,5 @@ mips_instr_table.h
 fail.png
 n64-systemtest/
 _deps/
+compile_commands.json
+.cache/

@@ -8,6 +8,7 @@
 #include <n64/mem/serial_interface.h>
 #include <n64/mem/audio_interface.h>
 #include <n64/mem/joybus.h>
+#include <n64/mem/tlb.h>
 
 namespace nintendo64
 {
@@ -28,7 +29,8 @@ struct Mem
 
     std::vector<u8> is_viewer;
 
-    u32 rd_ram_regs[10];
+    u32 rd_ram_regs[10] = {0};
+    TLB tlb;
     RdramInterface ri;
 
     SpRegs sp_regs;

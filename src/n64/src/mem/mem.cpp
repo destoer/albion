@@ -367,3 +367,4 @@ void write_u64(N64 &n64,u32 addr,u64 v)
 #include "mem/pif.cpp"
 #include "mem/serial_interface.cpp"
 #include "mem/audio_interface.cpp"
+#include "mem/tlb.cpp"

@@ -292,7 +292,7 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
 
             if((status.ux && status.ksu == 0b10) || (status.sx && status.ksu == 0b01) || (status.kx && status.ksu == 0b00))
             {
-                //unimplemented("64 bit addressing");
+                unimplemented("64 bit addressing");
             }
 
             check_interrupts(n64);
@@ -315,8 +315,9 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
         case beyond_all_repair::ENTRY_HI:
         {
             auto& entry_hi = cop0.entry_hi;
-            entry_hi.vpn2 = (v >> 13);
             entry_hi.asid = v & 0xff; 
+            entry_hi.vpn2 = (v >> 13) & 0x7f'ff'ff'f;
+            entry_hi.region = (v >> 62) & 0b11;
             break;
         }
 
