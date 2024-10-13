@@ -440,7 +440,7 @@ void instr_ll(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
 
     const u64 addr = n64.cpu.regs[base] + imm;
-    const u64 paddr = remap_addr(n64,addr);
+    const u64 paddr = remap_addr<u32,true>(n64,addr);
 
     n64.cpu.cop0.load_linked = paddr >> 4;
     n64.cpu.cop0.ll_bit = true;
@@ -455,7 +455,7 @@ void instr_lld(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
 
     const u64 addr = n64.cpu.regs[base] + imm;
-    const u64 paddr = remap_addr(n64,addr);
+    const u64 paddr = remap_addr<u64,true>(n64,addr);
 
     n64.cpu.cop0.load_linked = paddr >> 4;
     n64.cpu.cop0.ll_bit = true;

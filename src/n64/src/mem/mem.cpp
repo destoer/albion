@@ -1,4 +1,5 @@
 #include <n64/n64.h>
+#include "destoer/destoer.h"
 #include "spdlog/spdlog.h"
 
 namespace nintendo64
@@ -195,6 +196,7 @@ void reset_mem(Mem &mem, const std::string &filename)
     write_physical_table(mem,0xA000'0000 / PAGE_SIZE);
 }
 
+template<typename T, const bool READ>
 u32 remap_addr(N64& n64,u32 addr)
 {
     // TODO: do we care about caching?
@@ -206,7 +208,7 @@ u32 remap_addr(N64& n64,u32 addr)
 
     if(is_set(tlb_set,idx))
     {
-        assert(false);
+        unimplemented("Non remapped TLB access: %d %s",sizeof(T),READ? "read" : "write");
         return addr & 0x1FFF'FFFF;
     }
 
@@ -235,7 +237,7 @@ void write_mem_internal(N64& n64, u32 addr, access_type v)
     }
 
     // if we are doing a slow access remap the addr manually
-    addr = remap_addr(n64,addr);
+    addr = remap_addr<access_type,false>(n64,addr);
 
     write_physical<access_type>(n64,addr,v);    
 }
@@ -282,7 +284,7 @@ access_type read_mem_internal(N64& n64, u32 addr)
     }
 
     // if we are doing a slow access remap the addr manually
-    addr = remap_addr(n64,addr);
+    addr = remap_addr<access_type,true>(n64,addr);
 
     return read_physical<access_type>(n64,addr);    
 }
