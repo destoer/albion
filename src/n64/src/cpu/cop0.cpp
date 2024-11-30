@@ -46,7 +46,8 @@ void standard_exception(N64& n64, u32 code)
             case beyond_all_repair::TLBS:
             case beyond_all_repair::TLBM:
             {
-                vector = status.exl? 0x00 : 0x80;
+                // 0x80 in 64 bit
+                vector = 0x00;
                 break;
             }
 
