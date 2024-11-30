@@ -24,21 +24,20 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
         {
             auto& entry = tlb.entry[e];
 
-            // Page mask defines which bits are used of the vaddr on top of the base 12
-            const u64 page_mask = 0xfff | entry.page_mask << 12;
-            const auto vpn = (addr & ~page_mask);
-            const auto vpn2 = vpn / 2;
+            // For 32 bit mode, 64 bit is just full at 27 bits
+            const u64 vpn2_mode_mask = 0x7ffff;
+            const u64 vpn2_mask = vpn2_mode_mask & ~entry.page_mask;
 
-            // entry lo one for odd pages and entry lo zero for even pages
-            auto& entry_lo = vpn & 1? entry.entry_lo_one : entry.entry_lo_zero;
-
+            auto& entry_lo = is_set(addr,13)? entry.entry_lo_one : entry.entry_lo_zero;
+            const auto vpn2 = ((addr >> 12) & vpn2_mask);
+            
             // If the entry is not valid we don't care
             if(!entry_lo.v) 
             {
                 continue;
             }
 
-            if((entry.entry_hi.vpn2 & ~page_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry_lo.g)) 
+            if((entry.entry_hi.vpn2 & vpn2_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry_lo.g)) 
             {   
                 // Attempt to write to a read only entry!
                 if(!entry_lo.d && write)
@@ -47,8 +46,8 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
                     return std::nullopt;
                 }
 
-                const auto page_offset = addr & page_mask;
-                return entry.entry_hi.vpn2 | page_offset;
+                const auto page_offset = addr & ((entry.page_mask << 12) | 0xfff);
+                return (entry_lo.pfn << 12) | page_offset;
             }
         }
 

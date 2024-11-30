@@ -199,7 +199,7 @@ void mi_intr(N64& n64)
 
 void write_entry_lo(EntryLo& entry_lo, u32 v)
 {
-    entry_lo.pfn = (v >> 6) & 0x00ff'ffff;
+    entry_lo.pfn = (v >> 6) & 0x000f'ffff;
     entry_lo.c = (v >> 3) & 0b11;
     entry_lo.d = is_set(v,2);
     entry_lo.v = is_set(v,1);
@@ -321,7 +321,7 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
         {
             auto& entry_hi = cop0.entry_hi;
             entry_hi.asid = v & 0xff; 
-            entry_hi.vpn2 = (v >> 13) & 0x7f'ff'ff'f;
+            entry_hi.vpn2 = (v >> 13) & 0x7'ff'ff'ff;
             entry_hi.region = (v >> 62) & 0b11;
             break;
         }
