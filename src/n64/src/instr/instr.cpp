@@ -331,7 +331,18 @@ void instr_sw(N64 &n64, const Opcode &opcode)
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
 
-    write_u32<debug>(n64,n64.cpu.regs[base] + imm,n64.cpu.regs[opcode.rt]);
+    const u64 vaddr = n64.cpu.regs[base] + imm;
+    
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,true);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+    write_u32_physical<debug>(n64,phys_addr,n64.cpu.regs[opcode.rt]);
 }
 
 

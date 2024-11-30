@@ -42,9 +42,13 @@ void standard_exception(N64& n64, u32 code)
 
         switch(code)
         {
-            // how do we know what kind of tlb refill it is lol
-            case beyond_all_repair::TLBL: vector = 0x0; assert(false); break;
-            case beyond_all_repair::TLBS: vector = 0x080; assert(false); break;
+            case beyond_all_repair::TLBL:
+            case beyond_all_repair::TLBS:
+            case beyond_all_repair::TLBM:
+            {
+                vector = status.exl? 0x00 : 0x80;
+                break;
+            }
 
             default: vector = 0x180; break;
         }
@@ -71,10 +75,10 @@ void coprocesor_unusable(N64& n64, u32 number)
     standard_exception(n64,beyond_all_repair::COP_UNUSABLE);
 }
 
-void error_exception(N64& n64, u32 code)
+void bad_vaddr_exception(N64& n64, u64 address, u32 code) 
 {
-    assert(false);
-    UNUSED(n64); UNUSED(code); 
+    n64.cpu.cop0.bad_vaddr = address;
+    standard_exception(n64,code);
 }
 
 void check_interrupts(N64 &n64)

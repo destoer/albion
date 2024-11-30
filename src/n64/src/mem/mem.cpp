@@ -192,10 +192,12 @@ void reset_mem(Mem &mem, const std::string &filename)
     }
 
 
+    // TODO: This page table should just work over physical addresses.
     write_physical_table(mem,0x8000'0000 / PAGE_SIZE);
     write_physical_table(mem,0xA000'0000 / PAGE_SIZE);
 }
 
+// TODO: Get rid of this function when everything has been swapped over
 template<typename T, const bool READ>
 u32 remap_addr(N64& n64,u32 addr)
 {
@@ -208,7 +210,7 @@ u32 remap_addr(N64& n64,u32 addr)
 
     if(is_set(tlb_set,idx))
     {
-        unimplemented("Non remapped TLB access: %d %s",sizeof(T),READ? "read" : "write");
+        crash_and_burn("[PC: %08x] Non remapped TLB access %08x: %d %s",n64.cpu.pc,addr,sizeof(T),READ? "read" : "write");
         return addr & 0x1FFF'FFFF;
     }
 
@@ -261,6 +263,23 @@ void write_mem(N64 &n64, u32 addr, access_type v)
     }
 
     write_mem_internal<access_type>(n64,addr,v);
+}
+
+template<const b32 debug,typename access_type>
+void write_physical_debug(N64 &n64, u32 addr, access_type v)
+{
+    if constexpr(debug)
+    {
+#ifdef DEBUG
+        if(n64.debug.breakpoint_hit(addr,v,break_type::write))
+        {
+            write_log(n64.debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
+            n64.debug.halt();
+        }   
+#endif
+    }
+
+    write_physical<access_type>(n64,addr,v);
 }
 
 
@@ -349,6 +368,12 @@ template<const b32 debug>
 void write_u32(N64 &n64,u32 addr,u32 v)
 {
     write_mem<debug,u32>(n64,addr,v);
+}
+
+template<const b32 debug>
+void write_u32_physical(N64 &n64,u32 addr,u32 v)
+{
+    write_physical_debug<debug,u32>(n64,addr,v);
 }
 
 template<const b32 debug>
