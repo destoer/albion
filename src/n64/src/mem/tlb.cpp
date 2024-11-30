@@ -15,9 +15,8 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
         auto& cop0 = n64.cpu.cop0;
         auto& tlb = n64.mem.tlb;
 
-        // assume a 32 bit address
+        // assume a 32 bit address, change this in 64 bit mode?
         addr &= 0xffff'ffff;
-
 
         // Scan for a match in the tlb
         for(u32 e = 0; e < TLB_SIZE; e++) 
@@ -81,7 +80,7 @@ void write_tlb(N64& n64, u32 idx)
     
     tlb.entry[idx].page_mask = cop0.page_mask;
     tlb.entry[idx].entry_hi = cop0.entry_hi;
-    tlb.entry[idx].entry_hi.vpn2 = tlb.entry[idx].entry_hi.vpn2 & ~tlb.entry[idx].page_mask;
+    tlb.entry[idx].entry_hi.vpn2 = tlb.entry[idx].entry_hi.vpn2;
     
     tlb.entry[idx].entry_lo_one = cop0.entry_lo_one;
     tlb.entry[idx].entry_lo_zero = cop0.entry_lo_zero;
@@ -117,6 +116,7 @@ void instr_tlbp(N64& n64, const Opcode &opcode)
             ((entry.entry_lo_zero.g)|| entry.entry_hi.asid == cop0.entry_hi.asid))
         {
             cop0.index.idx = e;
+            cop0.index.p = false;
             return;
         }
     }
