@@ -30,10 +30,10 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
             auto& entry_lo = is_set(addr,13)? entry.entry_lo_one : entry.entry_lo_zero;
             const auto vpn2 = ((addr >> 12) & vpn2_mask);
             
-            // If the entry is not valid we don't care
+            // If the entry is not valid throw an exception
             if(!entry_lo.v) 
             {
-                continue;
+                break;
             }
 
             if((entry.entry_hi.vpn2 & vpn2_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry_lo.g)) 
@@ -49,6 +49,8 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
                 return (entry_lo.pfn << 12) | page_offset;
             }
         }
+
+        // TLB miss
 
         if(write) 
         {
