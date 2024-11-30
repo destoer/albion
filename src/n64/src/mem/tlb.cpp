@@ -18,17 +18,21 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
         // assume a 32 bit address, change this in 64 bit mode?
         addr &= 0xffff'ffff;
 
+        // For 32 bit mode, 64 bit is just full at 27 bits
+        const u64 vpn2_mode_mask = 0x7ffff;
+
+        // context used in 32 bit, otherwhise xcontext
+        auto& context = n64.cpu.cop0.context;
+
         // Scan for a match in the tlb
         for(u32 e = 0; e < TLB_SIZE; e++) 
         {
             auto& entry = tlb.entry[e];
 
-            // For 32 bit mode, 64 bit is just full at 27 bits
-            const u64 vpn2_mode_mask = 0x7ffff;
             const u64 vpn2_mask = vpn2_mode_mask & ~entry.page_mask;
 
             auto& entry_lo = is_set(addr,13)? entry.entry_lo_one : entry.entry_lo_zero;
-            const auto vpn2 = ((addr >> 12) & vpn2_mask);
+            const auto vpn2 = ((addr >> 13) & vpn2_mask);
             
             // If the entry is not valid throw an exception
             if(!entry_lo.v) 
@@ -41,12 +45,13 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
                 // Attempt to write to a read only entry!
                 if(!entry_lo.d && write)
                 {
+                    context.bad_vpn2 = (addr >> 13) & 0x7ffff;
                     bad_vaddr_exception(n64,addr,beyond_all_repair::TLBM);
                     return std::nullopt;
                 }
 
-                const auto page_offset = addr & ((entry.page_mask << 12) | 0xfff);
-                return (entry_lo.pfn << 12) | page_offset;
+                const auto page_offset = addr & ((entry.page_mask << 13) | 0xfff);
+                return (entry_lo.pfn << 13) | page_offset;
             }
         }
 
@@ -54,13 +59,17 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
 
         if(write) 
         {
+            context.bad_vpn2 = (addr >> 13) & 0x7ffff;
             bad_vaddr_exception(n64,addr,beyond_all_repair::TLBS);
         }
 
         else 
         {
+            context.bad_vpn2 = (addr >> 13) & 0x7ffff;
             bad_vaddr_exception(n64,addr,beyond_all_repair::TLBL);
         }
+
+
 
         // No match found
         return std::nullopt;
