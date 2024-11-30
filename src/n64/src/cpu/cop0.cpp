@@ -18,6 +18,7 @@ void standard_exception(N64& n64, u32 code)
         cause.exception_code = code;
 
 
+        // This assumes we have finished executing an instruction...
         if(!in_delay_slot(n64.cpu))
         {
             cop0.epc = n64.cpu.pc;
@@ -539,7 +540,7 @@ u64 read_cop0(N64& n64, u32 reg)
         case CAUSE:
         {
             auto& cause = cop0.cause;
-            return (cause.exception_code << 2) | (cause.pending  << 8) | (cause.coprocessor_error << 28) | (cause.branch_delay << 31); 
+            return (cause.exception_code << 2) | (cause.pending << 8) | (cause.coprocessor_error << 28) | (cause.branch_delay << 31); 
         }
 
         case CONFIG:

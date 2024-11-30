@@ -82,7 +82,8 @@ void instr_dsrav(N64 &n64, const Opcode &opcode)
 
 void instr_syscall(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_r(n64,opcode);
+    UNUSED(opcode);
+    standard_exception(n64,beyond_all_repair::SYSCALL);
 }
 
 void instr_mfhi(N64 &n64, const Opcode &opcode)
