@@ -294,6 +294,7 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
                 unimplemented("little endian");
             }
 
+            // TODO: we need to cache this inside address translation if it trips
             if((status.ux && status.ksu == 0b10) || (status.sx && status.ksu == 0b01) || (status.kx && status.ksu == 0b00))
             {
                 unimplemented("64 bit addressing");

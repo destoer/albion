@@ -15,31 +15,39 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
         auto& cop0 = n64.cpu.cop0;
         auto& tlb = n64.mem.tlb;
 
+        // assume a 32 bit address
+        addr &= 0xffff'ffff;
+
+
         // Scan for a match in the tlb
         for(u32 e = 0; e < TLB_SIZE; e++) 
         {
             auto& entry = tlb.entry[e];
 
-            // Not sure how the valid checks work or for that matter dirty bits which low entry is used
-            if(!(entry.entry_lo_zero.v && entry.entry_lo_one.v))
+            // Page mask defines which bits are used of the vaddr on top of the base 12
+            const u64 page_mask = 0xfff | entry.page_mask << 12;
+            const auto vpn = (addr & ~page_mask);
+            const auto vpn2 = vpn / 2;
+
+            // entry lo one for odd pages and entry lo zero for even pages
+            auto& entry_lo = vpn & 1? entry.entry_lo_one : entry.entry_lo_zero;
+
+            // If the entry is not valid we don't care
+            if(!entry_lo.v) 
             {
                 continue;
             }
 
-            // Page mask defines which bits are used of the vaddr on top of the base 12
-            const u64 page_mask = 0xfff | entry.page_mask << 12;
-            const auto page_offset = addr & page_mask;
-            const auto vpn2 = addr & ~page_mask;
-
-            if((entry.entry_hi.vpn2 & ~page_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry.entry_lo_zero.g)) 
+            if((entry.entry_hi.vpn2 & ~page_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry_lo.g)) 
             {   
                 // Attempt to write to a read only entry!
-                if(!(entry.entry_lo_zero.d && entry.entry_lo_one.d) && write)
+                if(!entry_lo.d && write)
                 {
                     bad_vaddr_exception(n64,addr,beyond_all_repair::TLBM);
                     return std::nullopt;
                 }
 
+                const auto page_offset = addr & page_mask;
                 return entry.entry_hi.vpn2 | page_offset;
             }
         }
