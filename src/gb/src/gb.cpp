@@ -10,9 +10,7 @@ GB::GB()
 	reset("no rom",false,false);
 	// default the breakpoints to off
 	// maybe something to consider as a config
-#ifdef DEBUG
 	change_breakpoint_enable(false);
-#endif
 }
 
 void GB::reset(std::string rom_name, bool with_rom, bool use_bios)
@@ -34,15 +32,13 @@ void GB::reset(std::string rom_name, bool with_rom, bool use_bios)
 	//printf("cgb: %s\n",cpu.is_cgb? "true" : "false");
 }
 
-#ifdef DEBUG
+
 void GB::change_breakpoint_enable(bool enabled)
 {
 	mem.change_breakpoint_enable(enabled);
 	cpu.change_breakpoint_enable(enabled);
 	debug.breakpoints_enabled = enabled;
 }
-#endif
-
 
 // need to do alot more integrity checking on data in these :)
 void GB::save_state(std::string filename)
@@ -194,7 +190,6 @@ void GB::run()
     ppu.new_vblank = false;
 	cpu.cycle_frame = false;
 	cpu.insert_new_cycle_event();
-#ifdef DEBUG
 	if(debug.is_halted())
 	{
 		return;
@@ -209,13 +204,6 @@ void GB::run()
 			return;
 		}
 	}
-#else 
-	// exec until cycles have elapsed
-	while(!cpu.cycle_frame)
-	{
-		cpu.exec_instr();
-	}
-#endif
 
 	if(throttle_emu)
 	{

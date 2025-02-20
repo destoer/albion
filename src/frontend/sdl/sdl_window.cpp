@@ -148,13 +148,10 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 
 	FpsCounter fps_counter;
 
-	UNUSED(start_debug);
-#ifdef DEBUG
 	if(start_debug)
 	{
 		debug_halt();
 	}
-#endif
 
 	playback.start();
 

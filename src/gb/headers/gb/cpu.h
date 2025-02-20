@@ -39,7 +39,6 @@ struct Cpu final
     void init(bool use_bios = false);
 
 
-#ifdef DEBUG
     EXEC_INSTR_FPTR exec_instr_fptr;
 
     inline void exec_instr()
@@ -48,17 +47,6 @@ struct Cpu final
     }
 
     void exec_instr_debug();
-
-#else 
-
-    inline void exec_instr()
-    {
-        exec_instr_no_debug();
-    }
-
-#endif
-
-
     void exec_instr_no_debug();
 
 
@@ -160,7 +148,6 @@ struct Cpu final
     void save_state(std::ofstream &fp);
     void load_state(std::ifstream &fp);
 
-#ifdef DEBUG
     void change_breakpoint_enable(bool enabled) noexcept
     {
         if(enabled)
@@ -173,7 +160,6 @@ struct Cpu final
             exec_instr_fptr = &Cpu::exec_instr_no_debug; 
         }
     }
-#endif
 
     Memory &mem;
     Apu &apu;

@@ -9,7 +9,7 @@
 namespace gameboy
 {
 
-#ifdef DEBUG
+
 void Cpu::exec_instr_debug()
 {
 	const auto x = mem.read_mem(pc);
@@ -22,8 +22,6 @@ void Cpu::exec_instr_debug()
 	}
 	exec_instr_no_debug();
 }
-#endif
-
 
 template<const int REG>
 void Cpu::write_r16_group1(u16 v)

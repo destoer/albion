@@ -9,18 +9,14 @@ namespace gameboyadvance
 // allow a dummy init
 GBA::GBA()
 {
-#ifdef DEBUG
 	change_breakpoint_enable(false);
-#endif
 }
 
-#ifdef DEBUG
 void GBA::change_breakpoint_enable(bool enabled)
 {
 	cpu.change_breakpoint_enable(enabled);
 	mem.change_breakpoint_enable(enabled);
 }
-#endif
 
 // init all sub compenents
 void GBA::reset(std::string filename)
@@ -40,12 +36,11 @@ void GBA::reset(std::string filename)
 void GBA::run()
 {
 	disp.new_vblank = false;	
-#ifdef DEBUG
+
 	if(debug.is_halted())
 	{
 		return;
 	}
-#endif
 
 	// break out early if we have hit a debug event
 	while(!disp.new_vblank) 

@@ -70,7 +70,6 @@ void step(N64 &n64)
 {
     const u32 op = read_u32<debug>(n64,n64.cpu.pc);
 
-#ifdef DEBUG 
     if constexpr(debug)
     {
         if(n64.debug.breakpoint_hit(u32(n64.cpu.pc),op,break_type::execute))
@@ -80,8 +79,7 @@ void step(N64 &n64)
             n64.debug.halt();
             return;
         }
-    }    
-#endif
+    }
 
     const Opcode opcode = beyond_all_repair::make_opcode(op);
 

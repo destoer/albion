@@ -624,7 +624,6 @@ u8 Memory::raw_read(u16 addr) const noexcept
 // public access functions
 
 // read mem
-#ifdef DEBUG
 u8 Memory::read_mem_debug(u16 addr) const noexcept
 {
 	const u8 value = read_mem_no_debug(addr);
@@ -636,8 +635,6 @@ u8 Memory::read_mem_debug(u16 addr) const noexcept
 	}
 	return value;
 }
-#endif
-
 
 u8 Memory::read_mem_no_debug(u16 addr) const noexcept
 {
@@ -653,8 +650,6 @@ u8 Memory::read_mem_no_debug(u16 addr) const noexcept
 
 
 // write_mem
-
-#ifdef DEBUG
 void Memory::write_mem_debug(u16 addr, u8 v) noexcept
 {
 	if(debug.breakpoint_hit(addr,v,break_type::write))
@@ -666,7 +661,6 @@ void Memory::write_mem_debug(u16 addr, u8 v) noexcept
 
 	write_mem_no_debug(addr,v);
 }
-#endif
 
 void Memory::write_mem_no_debug(u16 addr, u8 v) noexcept
 {
@@ -1175,7 +1169,6 @@ u8 Memory::read_io(u16 addr) const noexcept
     }
 }
 
-#ifdef DEBUG
 u8 Memory::read_iot_debug(u16 addr) noexcept
 {
 	const u8 value = read_iot_no_debug(addr);
@@ -1187,7 +1180,6 @@ u8 Memory::read_iot_debug(u16 addr) noexcept
 	}
 	return value;	
 }
-#endif
 
 u8 Memory::read_iot_no_debug(u16 addr) noexcept
 {
@@ -2318,8 +2310,6 @@ void Memory::do_hdma() noexcept
 	}	
 }
 
-
-#ifdef DEBUG
 void Memory::write_iot_debug(u16 addr, u8 v) noexcept
 {
 	if(debug.breakpoint_hit(addr,v,break_type::write))
@@ -2331,7 +2321,6 @@ void Memory::write_iot_debug(u16 addr, u8 v) noexcept
 
 	write_iot_no_debug(addr,v);	
 }
-#endif
 
 void Memory::write_iot_no_debug(u16 addr,u8 v) noexcept
 {

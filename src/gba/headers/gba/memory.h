@@ -94,8 +94,6 @@ struct Mem final
         cpu.cycle_tick(get_waitstates<access_type>(addr,sequential,use_prefetch));
     }
 
-
-#ifdef DEBUG
     template<typename access_type>
     using WRITE_MEM_FPTR = void (Mem::*)(u32 addr,access_type data);
 
@@ -136,61 +134,36 @@ struct Mem final
             write_u8_fptr  = &Mem::write_memt_no_debug<u8>;
         }
     }
-#endif
 
     // wrapper to optimise away debug check
     void write_u8(u32 addr , u8 v)
     {
-        #ifdef DEBUG
-            std::invoke(write_u8_fptr,this,addr,v);
-        #else
-            write_memt<u8>(addr,v);
-        #endif
+        std::invoke(write_u8_fptr,this,addr,v);
     }
 
     void write_u16(u32 addr , u16 v)
     {
-        #ifdef DEBUG
-            std::invoke(write_u16_fptr,this,addr,v);
-        #else
-            write_memt_no_debug<u16>(addr,v);
-        #endif
+        std::invoke(write_u16_fptr,this,addr,v);
     }
 
     void write_u32(u32 addr, u32 v)
     {
-        #ifdef DEBUG
-            std::invoke(write_u32_fptr,this,addr,v);
-        #else
-            write_memt_no_debug<u32>(addr,v);
-        #endif
+        std::invoke(write_u32_fptr,this,addr,v);
     }
 
     u8 read_u8(u32 addr)
     {
-        #ifdef DEBUG
-            return std::invoke(read_u8_fptr,this,addr);
-        #else
-            return read_memt_no_debug<u8>(addr);
-        #endif
+        return std::invoke(read_u8_fptr,this,addr);
     }
 
     u16 read_u16(u32 addr)
     {
-        #ifdef DEBUG
-            return std::invoke(read_u16_fptr,this,addr);
-        #else
-            return read_memt_no_debug<u16>(addr);
-        #endif
+        return std::invoke(read_u16_fptr,this,addr);
     }
 
     u32 read_u32(u32 addr)
     {
-        #ifdef DEBUG
-            return std::invoke(read_u32_fptr,this,addr);
-        #else
-            return read_memt_no_debug<u32>(addr);
-        #endif
+        return std::invoke(read_u32_fptr,this,addr);
     }
 
     // gba is locked to little endian

@@ -36,7 +36,6 @@ struct Memory final
     using WRITE_MEM_FPTR = void (Memory::*)(u16 addr,u8 data) noexcept;
     using READ_MEM_FPTR = u8 (Memory::*)(u16 addr) const noexcept;
     using READ_MEM_MUT_FPTR = u8 (Memory::*)(u16 addr) noexcept;
-#ifdef DEBUG
 
     WRITE_MEM_FPTR write_mem_fptr;
     READ_MEM_FPTR read_mem_fptr;
@@ -86,30 +85,6 @@ struct Memory final
        std::invoke(write_iot_fptr,this,addr,v);
     }
 
-
-#else
-    // public access functions
-    inline u8 read_mem(u16 addr) const noexcept
-    {
-        return read_mem_no_debug(addr);
-    }
-
-    inline void write_mem(u16 addr, u8 v) noexcept
-    {
-        write_mem_no_debug(addr,v);
-    }
-
-    u8 read_iot(u16 addr) noexcept
-    {
-        return read_iot_no_debug(addr);
-    }
-
-    void write_iot(u16 addr,u8 v) noexcept
-    {
-        write_iot_no_debug(addr,v);
-    }
-
-#endif
 
     u16 read_word(u16 addr) noexcept;
     void write_word(u16 addr, u16 v) noexcept;
@@ -175,12 +150,11 @@ struct Memory final
     GameboyScheduler &scheduler;
     GBDebug &debug;
 
-#ifdef DEBUG
+
     u8 read_mem_debug(u16 addr) const noexcept;
     void write_mem_debug(u16 addr, u8 v) noexcept;
     u8 read_iot_debug(u16 addr) noexcept;
     void write_iot_debug(u16 addr, u8 v) noexcept;
-#endif
 
     u8 read_mem_no_debug(u16 addr) const noexcept;
     void write_mem_no_debug(u16 addr, u8 v) noexcept;

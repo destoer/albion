@@ -22,9 +22,6 @@ void Debug::wake_up()
     halted = false;
 }
 
-
-#ifdef DEBUG
-
 // TODO: add memory searching
 
 
@@ -760,5 +757,3 @@ u64 Debug::read_pc()
 
     return pc;
 }
-
-#endif

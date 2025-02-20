@@ -253,13 +253,11 @@ void write_mem(N64 &n64, u32 addr, access_type v)
 {
     if constexpr(debug)
     {
-#ifdef DEBUG
         if(n64.debug.breakpoint_hit(addr,v,break_type::write))
         {
             write_log(n64.debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
             n64.debug.halt();
-        }   
-#endif
+        }
     }
 
     write_mem_internal<access_type>(n64,addr,v);
@@ -270,13 +268,11 @@ void write_physical_debug(N64 &n64, u32 addr, access_type v)
 {
     if constexpr(debug)
     {
-#ifdef DEBUG
         if(n64.debug.breakpoint_hit(addr,v,break_type::write))
         {
             write_log(n64.debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
             n64.debug.halt();
-        }   
-#endif
+        }
     }
 
     write_physical<access_type>(n64,addr,v);
@@ -315,13 +311,11 @@ access_type read_mem(N64 &n64, u32 addr)
 
     if constexpr(debug)
     {
-#ifdef DEBUG
-    if(n64.debug.breakpoint_hit(addr,v,break_type::read))
-    {
-        write_log(n64.debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
-        n64.debug.halt();
-    }
-#endif
+        if(n64.debug.breakpoint_hit(addr,v,break_type::read))
+        {
+            write_log(n64.debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
+            n64.debug.halt();
+        }
     }
 
     return v;

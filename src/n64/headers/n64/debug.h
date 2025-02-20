@@ -6,7 +6,6 @@
 
 namespace nintendo64
 {
-#ifdef DEBUG
 class N64Debug final : public Debug 
 {
 public:
@@ -57,13 +56,4 @@ private:
     N64 &n64;
 };
 
-#else
-
-class N64Debug : public Debug 
-{
-public:
-    N64Debug(N64 &n64) { UNUSED(n64); }
-};
-
-#endif
 }

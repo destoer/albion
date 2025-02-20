@@ -5,7 +5,6 @@
 // do we need a seperate map (i would rather not have two lookups as they are slow)
 // do we need to roll our own address decoder to store entries?
 
-#ifdef DEBUG
 namespace gameboyadvance
 {
 
@@ -127,5 +126,3 @@ b32 GBADebug::read_var(const std::string &name, u64* out)
 }
 
 }
-
-#endif

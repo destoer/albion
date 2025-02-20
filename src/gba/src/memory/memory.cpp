@@ -1352,13 +1352,13 @@ template<typename access_type>
 access_type Mem::read_memt(u32 addr)
 {
     const auto v = read_memt_no_debug<access_type>(addr);
-#ifdef DEBUG
+
     if(debug.breakpoint_hit(addr,v,break_type::read))
     {
         write_log(debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,cpu.pc_actual);
         debug.halt();
     }
-#endif
+
     return v;
 }
 
@@ -1641,13 +1641,12 @@ void Mem::write_memt_no_debug(u32 addr, access_type v)
 template<typename access_type>
 void Mem::write_memt(u32 addr,access_type v)
 {
-#ifdef DEBUG
     if(debug.breakpoint_hit(addr,v,break_type::write))
     {
         write_log(debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,cpu.pc_actual);
         debug.halt();
     }   
-#endif
+
     write_memt_no_debug(addr,v);
     open_bus_value = v;
 }

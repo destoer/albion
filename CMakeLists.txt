@@ -18,8 +18,8 @@ set(FRONTEND "SDL")
 include("thirdparty/spdlog.cmake")
 include("thirdparty/sdl2.cmake")
 
-#set(GB "TRUE")
-#set(GBA "TRUE")
+set(GB "TRUE")
+set(GBA "TRUE")
 set(N64 "TRUE")
 
 # add_compile_options(-fsanitize=undefined)
@@ -29,7 +29,7 @@ set(N64 "TRUE")
 
 
 if(${FRONTEND} STREQUAL "SDL")
-	add_definitions(-DAUDIO_ENABLE -DSDL_REQUIRED -DAUDIO_SDL -DDEBUG -DCONTROLLER_SDL -DFETCH_SPEEDHACK)
+	add_definitions(-DAUDIO_ENABLE -DSDL_REQUIRED -DAUDIO_SDL -DCONTROLLER_SDL -DFETCH_SPEEDHACK)
 	add_definitions(-DFRONTEND_SDL)
 endif()
 

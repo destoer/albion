@@ -81,8 +81,6 @@ void run_internal(N64 &n64)
 
         while(!n64.scheduler.event_ready())
         {
-
-#ifdef DEBUG
             if constexpr(debug)
             {
                 if(n64.debug.is_halted())
@@ -90,7 +88,6 @@ void run_internal(N64 &n64)
                     return;
                 }
             }
-#endif
             step<debug>(n64);
         }
         n64.scheduler.service_events();

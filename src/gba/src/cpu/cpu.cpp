@@ -216,8 +216,6 @@ void Cpu::exec_instr_no_debug()
     }
 }
 
-
-#ifdef DEBUG
 void Cpu::exec_instr_debug()
 {
     const u32 pc = pc_actual;
@@ -231,7 +229,6 @@ void Cpu::exec_instr_debug()
 	}
     exec_instr_no_debug();
 }
-#endif
 
 // we need to replace this with proper scheduling but its fine for now
 void Cpu::handle_power_state()

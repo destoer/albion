@@ -6,7 +6,6 @@
 
 namespace gameboyadvance
 {
-#ifdef DEBUG
 struct GBADebug final : public Debug 
 {
     GBADebug(GBA &gba);
@@ -60,14 +59,4 @@ private:
 
     GBA &gba;
 };
-
-#else
-
-class GBADebug : public Debug 
-{
-public:
-    GBADebug(GBA &gba) { UNUSED(gba); }
-};
-
-#endif
 }

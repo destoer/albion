@@ -1,7 +1,6 @@
 
 #include <n64/n64.h>
 
-#ifdef DEBUG
 namespace nintendo64
 {
 
@@ -130,4 +129,3 @@ b32 N64Debug::read_var(const std::string &name, u64* out)
 }
 
 }
-#endif

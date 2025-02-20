@@ -39,9 +39,7 @@ struct GB
     void save_state(std::string filename);
     void load_state(std::string filename);
 
-#ifdef DEBUG
     void change_breakpoint_enable(bool enabled);
-#endif
 
     // NOTE: see n64 core for better example of how to structure this
     // the effort required to fix this isn't worthwhile however

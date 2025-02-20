@@ -92,7 +92,6 @@ class Debug
 {
 public:
 
-#ifdef DEBUG
     Debug();
     ~Debug();
     
@@ -120,18 +119,6 @@ public:
         std::cout << str;
     }
 
-
-#else
-    void write_logger(std::string x,...) { UNUSED(x); }
-
-    template<typename... Args>
-    void print_console(std::string x,Args... args)
-    {
-        const auto str = fmt::vformat(x,fmt::make_format_args(args...));
-        std::cout << str;
-    }
-
-#endif
     b32 invalid_command(const std::vector<Token>& args);
     void breakpoint(const std::vector<Token> &args);
     void set_break_internal(const std::vector<Token> &args, b32 watch);
@@ -190,7 +177,7 @@ public:
     Trace trace;
 
 protected:
-#ifdef DEBUG
+
     // internal overrides
     virtual std::string disass_instr(u64 addr) = 0;
     virtual u64 get_instr_size(u64 addr) = 0;
@@ -199,7 +186,6 @@ protected:
 
     // NOTE: this must have a $pc value to read for impl read_pc()
     virtual b32 read_var(const std::string& name, u64* value_out) = 0;
-#endif
 
     std::ofstream log_file;
     b32 log_full = false;
@@ -219,10 +205,3 @@ public:
 //----- logger macro definition ---
 // might be a less nasty way to ensure these drop away
 // when the debugger is not compiled into the code
-
-
-#ifdef DEBUG
-#define write_log(X,...) (X).write_logger(__VA_ARGS__)
-#else 
-#define write_log(X,...)
-#endif

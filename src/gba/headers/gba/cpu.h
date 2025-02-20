@@ -113,8 +113,6 @@ struct Cpu final
 
 
     using EXEC_INSTR_FPTR = void (Cpu::*)(void);
-#ifdef DEBUG
-    
 
     EXEC_INSTR_FPTR exec_instr_fptr = &Cpu::exec_instr_no_debug;
 
@@ -124,16 +122,6 @@ struct Cpu final
     }
 
     void exec_instr_debug();
-
-#else 
-
-    inline void exec_instr()
-    {
-        exec_instr_no_debug();
-    }
-
-#endif
-
     void exec_instr_no_debug_thumb();
     void exec_instr_no_debug_arm();
 
@@ -181,7 +169,6 @@ struct Cpu final
     
     void request_interrupt(interrupt i);
 
-#ifdef DEBUG
     void change_breakpoint_enable(bool enabled) noexcept
     {
         if(enabled)
@@ -194,7 +181,6 @@ struct Cpu final
             exec_instr_fptr = &Cpu::exec_instr_no_debug; 
         }
     }
-#endif
 
 
     // cpu io memory
