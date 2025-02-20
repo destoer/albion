@@ -1,6 +1,4 @@
 #include <frontend/sdl/sdl_window.h>
-#include <frontend/imgui/imgui_window.h>
-#include <frontend/destoer/destoer_window.h>
 #include <albion/lib.h>
 #include <iostream>
 
@@ -46,19 +44,16 @@ int main(int argc, char *argv[])
     spdlog::set_pattern("[%H:%M:%S.%e] [%l] %v");
     std::fesetround(FE_TONEAREST);
 
-// if sdl is used for anything we need to init it here
-#ifdef SDL_REQUIRED
-    // sdl required for audio
+
+#ifdef FRONTEND_SDL
+
     SDL_SetMainReady();
 	if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
 		printf("Unable to initialize SDL: %s\n", SDL_GetError());
 		exit(1);
 	}
-#endif
 
-#ifdef FRONTEND_SDL
-    
     Config cfg = get_config(argc,argv);
 
     if(argc < 2)
@@ -67,25 +62,7 @@ int main(int argc, char *argv[])
         return 0;
     }
     start_emu(argv[1],cfg);
-#endif
 
-#ifdef FRONTEND_IMGUI
-    UNUSED(argc); UNUSED(argv);
-
-    std::string rom_name = "";
-    if(argc == 2)
-    {
-        rom_name = argv[1];
-    }
-
-    mainloop(rom_name);
-#endif
-
-#ifdef FRONTEND_DESTOER
-    destoer_ui();
-#endif
-
-#ifdef SDL_REQUIRED
     SDL_Quit();
 #endif
 

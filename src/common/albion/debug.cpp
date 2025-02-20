@@ -157,69 +157,12 @@ Debug::Debug()
         exit(1);
     }
     disable_everything();
-
-#ifdef FRONTEND_IMGUI
-    console.resize(256);
-    assert((console.size() & (console.size() - 1)) == 0);
-#endif
 }
 
 Debug::~Debug()
 {
     log_file.close();
 }
-
-#ifdef FRONTEND_IMGUI
-#include <frontend/imgui/imgui_window.h>
-
-void Debug::draw_console()
-{
-    ImGui::BeginChild("console_child",ImVec2(0, 350), true);
-
-    static b32 update = false;
-
-    for (size_t i = 0; i < console.size(); i++)
-    {         
-        const auto str = console[(i+console_idx) & (console.size() - 1)];
-        ImGui::Text("%s",str.c_str());
-    }
-    
-    if(update)
-    {
-        update = false;
-        ImGui::SetScrollHereY(1.0f);
-    }
-
-
-
-    ImGui::EndChild();
-
-    static char input[128] = "";
-
-    if(ImGui::InputText("##console-text-input", input, IM_ARRAYSIZE(input),ImGuiInputTextFlags_EnterReturnsTrue))
-    {
-        if(*input)
-        {
-            print_console("$ {}\n",input);
-            std::vector<Token> args;
-            if(!tokenize(input,args))
-            {
-                // TODO: provide better error reporting
-                print_console("one or more args is invalid");
-            }
-            
-            execute_command(args);
-            *input = '\0';
-        }
-        // keep in text box after input
-        ImGui::SetKeyboardFocusHere(-1);
-
-        // scroll to bottom after command
-        update = true;
-    }
-}
-
-#endif
 
 // console impl
 

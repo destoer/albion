@@ -92,11 +92,6 @@ enum class emu_control
 
 */
 
-
-#if FRONTEND_IMGUI
-	#include <frontend/imgui/imgui_window.h>
-#endif
-
 emu_control Input::handle_input(SDL_Window* window, b32 ignore_key_inputs)
 {
     b32 key_pressed = false;
@@ -107,12 +102,7 @@ emu_control Input::handle_input(SDL_Window* window, b32 ignore_key_inputs)
 
 	// handle input
 	while(SDL_PollEvent(&event))
-	{	
-		// handle imgui events if its the frontend
-		#if FRONTEND_IMGUI
-			ImGui_ImplSDL2_ProcessEvent(&event);
-		#endif
-
+	{
 		switch(event.type) 
 		{
 			case SDL_WINDOWEVENT:

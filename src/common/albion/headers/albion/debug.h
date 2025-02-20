@@ -117,19 +117,8 @@ public:
     {
         // assume SDL for now
         const auto str = fmt::vformat(x,fmt::make_format_args(args...));
-#ifdef FRONTEND_SDL
         std::cout << str;
-#endif 
-
-#ifdef FRONTEND_IMGUI
-        console[console_idx] = str;
-        console_idx = (console_idx + 1) & (console.size() - 1);
-#endif
     }
-
-#ifdef FRONTEND_IMGUI
-    void draw_console();
-#endif
 
 
 #else
@@ -141,10 +130,6 @@ public:
         const auto str = fmt::vformat(x,fmt::make_format_args(args...));
         std::cout << str;
     }
-
-#ifdef FRONTEND_IMGUI
-    void draw_console() {}
-#endif
 
 #endif
     b32 invalid_command(const std::vector<Token>& args);
@@ -203,11 +188,6 @@ public:
 
 
     Trace trace;
-
-#ifdef FRONTEND_IMGUI
-    std::vector<std::string> console;
-    size_t console_idx = 0;
-#endif
 
 protected:
 #ifdef DEBUG
