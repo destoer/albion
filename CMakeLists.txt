@@ -13,10 +13,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(FRONTEND "SDL")
 
 # external frontend
-#set(FRONTEND "HEADLESS")
 
 include("thirdparty/spdlog.cmake")
-include("thirdparty/sdl2.cmake")
+include("thirdparty/sdl3.cmake")
 
 set(GB "TRUE")
 set(GBA "TRUE")
@@ -29,12 +28,7 @@ set(N64 "TRUE")
 
 
 if(${FRONTEND} STREQUAL "SDL")
-	add_definitions(-DAUDIO_ENABLE -DSDL_REQUIRED -DAUDIO_SDL -DCONTROLLER_SDL -DFETCH_SPEEDHACK)
-	add_definitions(-DFRONTEND_SDL)
-endif()
-
-if(${FRONTEND} STREQUAL "HEADLESS")
-	add_definitions(-DFRONTEND_HEADLESS)
+	add_definitions(-DFETCH_SPEEDHACK)
 endif()
 
 
@@ -95,4 +89,4 @@ if(DEFINED GB)
 	target_link_libraries(albion PUBLIC gb)
 endif()
 
-target_link_libraries(albion PRIVATE destoer spdlog::spdlog SDL2::SDL2-static)
+target_link_libraries(albion PRIVATE destoer spdlog::spdlog SDL3::SDL3-static)

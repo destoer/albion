@@ -1,6 +1,7 @@
 #pragma once
 #include <albion/lib.h>
 #include <iostream>
+#include <variant>
 
 
 struct Trace
@@ -203,5 +204,4 @@ public:
 
 
 //----- logger macro definition ---
-// might be a less nasty way to ensure these drop away
-// when the debugger is not compiled into the code
+#define write_log(X,...) (X).write_logger(__VA_ARGS__)

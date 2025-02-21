@@ -1,5 +1,4 @@
 #pragma once
-#ifdef FRONTEND_SDL
 #include <frontend/input.h>
 #include <frontend/playback.h>
 
@@ -7,7 +6,7 @@
 #ifdef _WIN32
 #include <SDL.H>
 #else
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #endif
 
 
@@ -80,5 +79,3 @@ inline Config get_config(int argc, char* argv[])
 
 
 void start_emu(std::string filename, Config& cfg);
-
-#endif

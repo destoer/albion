@@ -1,13 +1,13 @@
 #pragma once
 #include <albion/lib.h>
 #include <albion/input.h>
-#ifdef CONTROLLER_SDL
+
 
 #define SDL_MAIN_HANDLED
 #ifdef _WIN32
 #include <SDL.H>
 #else
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #endif
 
 enum class emu_control
@@ -32,26 +32,10 @@ public:
     Controller controller;
 
 private:
-    void connect_controller(int id);
-    void disconnect_controller(int id);
+    bool connect_controller(SDL_JoystickID id);
+    void disconnect_controller(SDL_JoystickID id);
 
     bool controller_connected = false;
-    SDL_GameController *game_controller = NULL;
-    int id = -1;
+    SDL_Gamepad *game_controller = NULL;
+    SDL_JoystickID id = -1;
 };
-
-#else
-
-// stubbed input does nothing
-class Input
-{
-public:
-    void init();
-    void controller_connected(int id);
-    void controller_disconnected(int id);
-    ~Input();
-
-    Controller controller;
-};
-
-#endif

@@ -1,4 +1,4 @@
-#ifdef FRONTEND_SDL
+
 #include <frontend/sdl/sdl_window.h>
 
 #ifdef GB_ENABLED
@@ -95,13 +95,10 @@ void SDLMainWindow::create_texture(u32 x, u32 y)
 void SDLMainWindow::init_sdl(u32 x, u32 y)
 {
 	// initialize our window
-	window = SDL_CreateWindow("albion",
-		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,x * 2,y *2,SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
-	
-	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl"); // crashes without this on windows?
+	window = SDL_CreateWindow("albion",x * 2,y *2,SDL_WINDOW_RESIZABLE);
 	
 	// set a render for our window
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer(window, NULL);
 
 	create_texture(x,y);
 	SDL_GL_SetSwapInterval(1);
@@ -111,7 +108,7 @@ void SDLMainWindow::render(const u32* data)
 {
     // do our screen blit
     SDL_UpdateTexture(texture, NULL, data,  4 * X);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);    	
 }
 
@@ -133,7 +130,7 @@ SDLMainWindow::~SDLMainWindow()
 		SDL_DestroyTexture(texture);
 	}
 
-    SDL_QuitSubSystem(SDL_INIT_EVERYTHING);  
+    SDL_Quit();  
 }
 
 
@@ -207,5 +204,3 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 		handle_debug();
     }	
 }
-
-#endif

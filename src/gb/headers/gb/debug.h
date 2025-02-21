@@ -16,10 +16,6 @@ struct GBDebug final : public Debug
     void step(const std::vector<Token> &args);
     void disass(const std::vector<Token> &args);    
 
-
-
-
-
     // overrides
     void change_breakpoint_enable(bool enable) override;
     u8 read_mem(uint64_t addr) override;

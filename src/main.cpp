@@ -2,14 +2,11 @@
 #include <albion/lib.h>
 #include <iostream>
 
-#ifdef SDL_REQUIRED
 #define SDL_MAIN_HANDLED
 #ifdef _WIN32
 #include <SDL.H>
-
 #else
-#include <SDL2/SDL.h>
-#endif
+#include <SDL3/SDL.h>
 #endif
 
 #include "test.cpp"
@@ -19,7 +16,7 @@
 int main(int argc, char *argv[])
 {  
     UNUSED(argc); UNUSED(argv);
-#ifndef FRONTEND_HEADLESS    
+  
     if(argc == 2)
     {
         std::string arg(argv[1]);
@@ -38,17 +35,12 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-#endif
 
     spdlog::set_level(spdlog::level::debug);
     spdlog::set_pattern("[%H:%M:%S.%e] [%l] %v");
     std::fesetround(FE_TONEAREST);
 
-
-#ifdef FRONTEND_SDL
-
-    SDL_SetMainReady();
-	if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if(!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_VIDEO))
 	{
 		printf("Unable to initialize SDL: %s\n", SDL_GetError());
 		exit(1);
@@ -64,7 +56,6 @@ int main(int argc, char *argv[])
     start_emu(argv[1],cfg);
 
     SDL_Quit();
-#endif
 
     return 0;
 }

@@ -1,6 +1,5 @@
 #include <destoer/destoer.h>
 #include <albion/lib.h>
-#ifndef FRONTEND_HEADLESS 
 
 #ifdef GB_ENABLED
 #include <gb/gb.h>
@@ -266,5 +265,3 @@ void run_tests()
 #endif
 
 }
-
-#endif

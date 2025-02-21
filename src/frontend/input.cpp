@@ -1,42 +1,44 @@
 #include "input.h"
 #include <albion/lib.h>
 
-#ifdef CONTROLLER_SDL
 void Input::init()
 {
+    int gamepad_count = 0;
+    SDL_JoystickID *gamepad = SDL_GetJoysticks(&gamepad_count);
+
+    // no gamepads
+    if(!gamepad)
+    {
+        return;
+    }
+
     // pick first valid controller
-	for(int i = 0; i < SDL_NumJoysticks(); i++)
+	for(int i = 0; i < gamepad_count; i++)
 	{
-		if(SDL_IsGameController(i))
-		{
-			game_controller = SDL_GameControllerOpen(i);
-            if(game_controller == NULL)
-            {
-                throw std::runtime_error("could not open controller!");
-            }
-            controller_connected = true;
-            this->id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(game_controller));
+        if(connect_controller(id))
+        {
             break;
-		}
+        }
 	}  
 }
 
-void Input::connect_controller(int id)
+bool Input::connect_controller(SDL_JoystickID id)
 {
-    if(SDL_IsGameController(id) && !controller_connected)
+    if(SDL_IsGamepad(id) && !controller_connected)
     {
-        game_controller = SDL_GameControllerOpen(id);
-        if(game_controller == NULL)
+        game_controller = SDL_OpenGamepad(id);
+        if(game_controller)
         {
-            throw std::runtime_error("could not open controller!");
+            controller_connected = true;
+            this->id = id;
+            return true;
         }
-        controller_connected = true;
-        // just sdl things
-        this->id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(game_controller));
-    }    
+    }
+
+    return false;    
 }
 
-void Input::disconnect_controller(int id)
+void Input::disconnect_controller(SDL_JoystickID id)
 {
     if(this->id == id)
     {
@@ -70,10 +72,10 @@ void Input::add_event_from_key(s32 key, b32 down)
 		case SDLK_LEFT: controller.add_event(controller_input::left,down); break;
 		case SDLK_RIGHT: controller.add_event(controller_input::right,down); break;
 
-		case SDLK_a: controller.add_event(controller_input::a,down); break;
-		case SDLK_s: controller.add_event(controller_input::x,down); break;
-		case SDLK_d: controller.add_event(controller_input::left_trigger,down); break;
-		case SDLK_f: controller.add_event(controller_input::right_trigger,down); break;
+		case SDLK_A: controller.add_event(controller_input::a,down); break;
+		case SDLK_S: controller.add_event(controller_input::x,down); break;
+		case SDLK_D: controller.add_event(controller_input::left_trigger,down); break;
+		case SDLK_F: controller.add_event(controller_input::right_trigger,down); break;
 
 		default: break;
 	}
@@ -105,22 +107,19 @@ emu_control Input::handle_input(SDL_Window* window, b32 ignore_key_inputs)
 	{
 		switch(event.type) 
 		{
-			case SDL_WINDOWEVENT:
+			case SDL_EVENT_WINDOW_RESIZED:
 			{
-				if(event.window.event == SDL_WINDOWEVENT_RESIZED)
-				{
-					SDL_SetWindowSize(window,event.window.data1, event.window.data2);
-				}
+				SDL_SetWindowSize(window,event.window.data1, event.window.data2);
 				break;
 			}
 
-			case SDL_QUIT:
+			case SDL_EVENT_QUIT:
 			{
 				control = emu_control::quit_t;
 				break;
 			}	
 			
-			case SDL_KEYDOWN:
+			case SDL_EVENT_KEY_DOWN:
 			{
 				if(ignore_key_inputs)
 				{
@@ -130,23 +129,23 @@ emu_control Input::handle_input(SDL_Window* window, b32 ignore_key_inputs)
 				key_pressed = true;
 
 
-				const s32 key = event.key.keysym.sym;
+				const s32 key = event.key.key;
 
 				switch(key)
 				{
-					case SDLK_p:
+					case SDLK_P:
 					{
 						control = emu_control::break_t;
 						break;
 					}
 
-					case SDLK_k:
+					case SDLK_K:
 					{
 						control = emu_control::unbound_t;
 						break;
 					}
 
-					case SDLK_l:
+					case SDLK_L:
 					{
 						control = emu_control::throttle_t;
 						break;
@@ -154,24 +153,24 @@ emu_control Input::handle_input(SDL_Window* window, b32 ignore_key_inputs)
 
 					default:
 					{
-						add_event_from_key(event.key.keysym.sym,true);
+						add_event_from_key(event.key.key,true);
 						break;
 					}
 				}
                 break;
 			}
 			
-			case SDL_KEYUP:
+			case SDL_EVENT_KEY_UP:
 			{
 				if(!ignore_key_inputs)
 				{
-					add_event_from_key(event.key.keysym.sym,false);
+					add_event_from_key(event.key.key,false);
 				}
                 break;
 			}
 
-			case SDL_CONTROLLERDEVICEADDED: connect_controller(event.cdevice.which); break;
-			case SDL_CONTROLLERDEVICEREMOVED: disconnect_controller(event.cdevice.which); break;
+			case SDL_EVENT_GAMEPAD_ADDED: connect_controller(event.cdevice.which); break;
+			case SDL_EVENT_GAMEPAD_REMOVED: disconnect_controller(event.cdevice.which); break;
 
 
             default:
@@ -191,12 +190,12 @@ emu_control Input::handle_input(SDL_Window* window, b32 ignore_key_inputs)
 }
 
 
-void get_joystick(SDL_GameController* game_controller,Joystick& stick,SDL_GameControllerAxis x_axis, SDL_GameControllerAxis y_axis)
+void get_joystick(SDL_Gamepad* game_controller,Joystick& stick,SDL_GamepadAxis x_axis, SDL_GamepadAxis y_axis)
 {
     static constexpr u32 DEADZONE_LIM = 3200;
 
-    stick.x = SDL_GameControllerGetAxis(game_controller,x_axis);
-    stick.y = SDL_GameControllerGetAxis(game_controller,y_axis);   
+    stick.x = SDL_GetGamepadAxis(game_controller,x_axis);
+    stick.y = SDL_GetGamepadAxis(game_controller,y_axis);   
 
     //printf("(%d,%d)\n",stick.x,stick.y);
 
@@ -219,16 +218,16 @@ void Input::handle_controller_input()
     }
 
     // get game controller update
-    SDL_GameControllerUpdate();
+    SDL_UpdateGamepads();
 
-    static constexpr SDL_GameControllerButton sdl_buttons[] = 
+    static constexpr SDL_GamepadButton sdl_buttons[] = 
     {
-        SDL_CONTROLLER_BUTTON_A,
-        SDL_CONTROLLER_BUTTON_X,
-        SDL_CONTROLLER_BUTTON_START,
-        SDL_CONTROLLER_BUTTON_BACK,
-        SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-        SDL_CONTROLLER_BUTTON_LEFTSHOULDER
+        SDL_GAMEPAD_BUTTON_WEST,
+        SDL_GAMEPAD_BUTTON_SOUTH,
+        SDL_GAMEPAD_BUTTON_START,
+        SDL_GAMEPAD_BUTTON_BACK,
+        SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+        SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
     };
 
     static constexpr controller_input controller_buttons[] = 
@@ -240,10 +239,12 @@ void Input::handle_controller_input()
         controller_input::right_trigger,
         controller_input::left_trigger,
     };
-    static_assert(sizeof(controller_buttons) == sizeof(sdl_buttons));
-
 
     static constexpr int CONTROLLER_BUTTONS_SIZE = sizeof(controller_buttons) / sizeof(controller_buttons[0]);
+    static_assert(CONTROLLER_BUTTONS_SIZE == (sizeof(sdl_buttons) / sizeof(sdl_buttons[0])));
+
+
+    
 
     // cache the old state so we know when a new key press has occured
     static bool buttons_prev[CONTROLLER_BUTTONS_SIZE] = {false};
@@ -252,7 +253,7 @@ void Input::handle_controller_input()
     for(int i = 0; i < CONTROLLER_BUTTONS_SIZE; i++)
     {
         // now we handle controller inputs
-        auto b = SDL_GameControllerGetButton(game_controller,sdl_buttons[i]);
+        auto b = SDL_GetGamepadButton(game_controller,sdl_buttons[i]);
         if(b && !buttons_prev[i])
         {
 			controller.add_event(controller_buttons[i],true);
@@ -291,8 +292,8 @@ void Input::handle_controller_input()
         };
 
         // handle the joystick
-        const auto x = SDL_GameControllerGetAxis(game_controller,SDL_CONTROLLER_AXIS_LEFTX);
-        const auto y = SDL_GameControllerGetAxis(game_controller,SDL_CONTROLLER_AXIS_LEFTY);
+        const auto x = SDL_GetGamepadAxis(game_controller,SDL_GAMEPAD_AXIS_LEFTX);
+        const auto y = SDL_GetGamepadAxis(game_controller,SDL_GAMEPAD_AXIS_LEFTY);
 
         // in y axis deadzone deset both
         if(y == threshold)
@@ -365,12 +366,12 @@ void Input::handle_controller_input()
 
     else
     {
-        get_joystick(game_controller,controller.left,SDL_CONTROLLER_AXIS_LEFTX,SDL_CONTROLLER_AXIS_LEFTY);
+        get_joystick(game_controller,controller.left,SDL_GAMEPAD_AXIS_LEFTX,SDL_GAMEPAD_AXIS_LEFTY);
     }
 
     // handle analog triggers
-    const auto trig_l = SDL_GameControllerGetAxis(game_controller,SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-    const auto trig_r = SDL_GameControllerGetAxis(game_controller,SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+    const auto trig_l = SDL_GetGamepadAxis(game_controller,SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
+    const auto trig_r = SDL_GetGamepadAxis(game_controller,SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
 
     static bool trig_l_prev = false;
     static bool trig_r_prev = false;
@@ -391,6 +392,3 @@ void Input::handle_controller_input()
     }
 
 }
-
-
-#endif
