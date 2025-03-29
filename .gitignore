@@ -51,3 +51,4 @@ n64-systemtest/
 _deps/
 compile_commands.json
 .cache/
+fail/

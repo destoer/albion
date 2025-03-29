@@ -131,6 +131,8 @@ void n64_run_tests()
         const char* image_name;
         const char* name;
         int frames;
+        // We should try get rid of these, but its better for development atm
+        bool override_image = false;
     };
 
     Test TESTS[] = 
@@ -138,8 +140,8 @@ void n64_run_tests()
         // {"N64/CPUTest/CPU//CPU.N64","N64/CPUTest/CPU//CPU.png","KROM_CPU_",5},
         // {"N64/CPUTest/CPU/LOADSTORE//CPU.N64","N64/CPUTest/CPU/LOADSTORE//CPU.png","KROM_CPU_",5},
         {"N64/CPUTest/CPU/ADD/CPUADD.N64","N64/CPUTest/CPU/ADD/CPUADD.png","KROM_CPU_ADD",5},
-        {"N64/CPUTest/CPU/ADDU/CPUADDU.N64","N64/CPUTest/CPU/ADDU/CPUADDU.png","KROM_CPU_ADDU",5},
         {"N64/CPUTest/CPU/AND/CPUAND.N64","N64/CPUTest/CPU/AND/CPUAND.png","KROM_CPU_AND",5},
+        {"N64/CPUTest/CPU/ADDU/CPUADDU.N64","N64/CPUTest/CPU/ADDU/CPUADDU.png","KROM_CPU_ADDU",5},
         {"N64/CPUTest/CPU/DADDU/CPUDADDU.N64","N64/CPUTest/CPU/DADDU/CPUDADDU.png","KROM_CPU_DADDU",5},
 
         {"N64/CPUTest/CPU/DDIV/CPUDDIV.N64","N64/CPUTest/CPU/DDIV/CPUDDIV.png","KROM_CPU_DDIV",5},
@@ -159,14 +161,14 @@ void n64_run_tests()
         {"N64/CPUTest/CPU/LOADSTORE/LD/CPULD.N64","N64/CPUTest/CPU/LOADSTORE/LD/CPULD.png","KROM_CPU_LD",5},
 
         //passing without a matching image?
-    /* 
-        {"N64/CPUTest/CPU/LOADSTORE/SB/CPUSB.N64","N64/CPUTest/CPU/LOADSTORE/SB/CPUSB.png","KROM_CPU_SB",5},
-        {"N64/CPUTest/CPU/LOADSTORE/SH/CPUSH.N64","N64/CPUTest/CPU/LOADSTORE/SH/CPUSH.png","KROM_CPU_SH",5},
+    
+        {"N64/CPUTest/CPU/LOADSTORE/SB/CPUSB.N64","N64/CPUTest/CPU/LOADSTORE/SB/CPUSB.png","KROM_CPU_SB",5,true},
+        {"N64/CPUTest/CPU/LOADSTORE/SH/CPUSH.N64","N64/CPUTest/CPU/LOADSTORE/SH/CPUSH.png","KROM_CPU_SH",5,true},
         {"N64/CPUTest/CPU/LOADSTORE/SW/CPUSW.N64","N64/CPUTest/CPU/LOADSTORE/SW/CPUSW.png","KROM_CPU_SW",5},
         {"N64/CPUTest/CPU/LOADSTORE/SD/CPUSD.N64","N64/CPUTest/CPU/LOADSTORE/SD/CPUSD.png","KROM_CPU_SD",5},
     
-        {"N64/CPUTest/CPU/LOADSTORE/LL_LLD_SC_SCD/LL_LLD_SC_SCD.N64","N64/CPUTest/CPU/LOADSTORE/LL_LLD_SC_SCD/LL_LLD_SC_SCD.png","KROM_CPU_LL_LLD_SC_SCD",5},
-    */
+        {"N64/CPUTest/CPU/LOADSTORE/LL_LLD_SC_SCD/LL_LLD_SC_SCD.N64","N64/CPUTest/CPU/LOADSTORE/LL_LLD_SC_SCD/LL_LLD_SC_SCD.png","KROM_CPU_LL_LLD_SC_SCD",5,true},
+    
         {"N64/CPUTest/CPU/MULT/CPUMULT.N64","N64/CPUTest/CPU/MULT/CPUMULT.png","KROM_CPU_MULT",5},
         {"N64/CPUTest/CPU/MULTU/CPUMULTU.N64","N64/CPUTest/CPU/MULTU/CPUMULTU.png","KROM_CPU_MULTU",5},
 
@@ -200,7 +202,9 @@ void n64_run_tests()
             std::vector<u32> screen_check;
 
             // Attempt to open the comparison
-            const b32 error = read_test_image(test.image_name,screen_check);
+            const std::string image_name = test.override_image? fmt::format("n64_image_override/{}.png",test.name) : test.image_name;
+
+            const b32 error = read_test_image(image_name,screen_check);
             
             // Cannot find file -> auto set the image
             if(error)
@@ -240,8 +244,7 @@ void n64_run_tests()
 
                 if(!pass)
                 {
-                    write_test_image("fail.png",n64.rdp.screen,n64.rdp.screen_x,n64.rdp.screen_y);
-                    exit(1);
+                    write_test_image(fmt::format("fail/{}.png",test.name),n64.rdp.screen,n64.rdp.screen_x,n64.rdp.screen_y);
                 }
             }
         }
