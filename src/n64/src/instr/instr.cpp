@@ -431,8 +431,8 @@ void instr_sdr(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     u64 addr = (n64.cpu.regs[base] + imm);
 
-    const u32 offset = 7 - (addr & 7);
-    const u32 mask = u64(0xffff'ffff'ffff'ffff) << (offset * 8);
+    const u64 offset = 7 - (addr & 7);
+    const u64 mask = u64(0xffff'ffff'ffff'ffff) << (offset * 8);
 
     // 'rotate' like an unaligned arm load
     u64 v = n64.cpu.regs[opcode.rt] << (offset * 8);

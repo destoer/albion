@@ -184,6 +184,9 @@ void n64_run_tests()
 
     spdlog::info("n64 tests:\n");
     
+    std::vector<std::string> pass_list;
+    std::vector<std::string> fail_list;
+
     try
     {
         for(int t = 0; t < TEST_SIZE; t++)
@@ -240,11 +243,18 @@ void n64_run_tests()
                     pass = false;
                 }
 
+                
                 spdlog::info("{}: {}\n",test.rom_path,pass? "PASS" : "FAIL");
 
                 if(!pass)
                 {
+                    fail_list.push_back(test.rom_path);
                     write_test_image(fmt::format("fail/{}.png",test.name),n64.rdp.screen,n64.rdp.screen_x,n64.rdp.screen_y);
+                }
+
+                else 
+                {
+                    pass_list.push_back(test.rom_path);
                 }
             }
         }
@@ -254,6 +264,22 @@ void n64_run_tests()
     {
         std::cout << fmt::format("{}: \n",ex.what());
     }
+
+    spdlog::info("---------- PASS ------- \n");
+
+    for(auto& name : pass_list)
+    {
+        spdlog::info("PASS: {}",name);
+    }
+
+    spdlog::info("\n---------- FAIL ------- \n");
+
+    for(auto& name : fail_list)
+    {
+        spdlog::error("FAIL: {}",name);
+    }
+
+
 }
 #endif
 
