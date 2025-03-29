@@ -26,7 +26,7 @@ void do_si_dma(N64& n64, u64 src, u64 dst)
         return;
     }
 
-    spdlog::debug("si dma of 256 bytes from {:x} to {:x}\n",src,dst);
+    spdlog::trace("si dma of 256 bytes from {:x} to {:x}\n",src,dst);
 
     for(u32 i = 0; i < 64; i += 4)
     {

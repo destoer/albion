@@ -8,6 +8,7 @@ void N64Window::init(const std::string& filename,Playback& playback)
     input.init();
     reset(n64,filename);
     input.controller.simulate_dpad = false;	
+    playback.init(n64.audio_buffer);
 }
 
 void N64Window::pass_input_to_core()

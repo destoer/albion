@@ -13,7 +13,7 @@ void pi_dma_finished(N64& n64)
 // TODO: handle dma domains properly
 void do_pi_dma(N64 &n64, u32 src, u32 dst, u32 len)
 {
-    spdlog::debug("pi dma from {:x} to {:x} len {:x}\n",src,dst,len);
+    spdlog::trace("pi dma from {:x} to {:x} len {:x}\n",src,dst,len);
 
     auto& pi = n64.mem.pi;
 

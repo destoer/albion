@@ -5,6 +5,7 @@
 #include <n64/debug.h>
 #include <n64/scheduler.h>
 #include <albion/lib.h>
+#include <albion/audio.h>
 #include <beyond_all_repair.h>
 #include <albion/input.h>
 
@@ -23,6 +24,7 @@ struct N64
     bool quit = false;
     bool size_change = false;
     b32 debug_enabled = false;
+    AudioBuffer audio_buffer;
 };
 
 static constexpr u32 N64_CLOCK_CYCLES = 93 * 1024 * 1024;

@@ -39,7 +39,7 @@ void change_res(N64 &n64)
     x = (f32(x) * x_scale);
     y = (f32(y + 3) * y_scale);
 
-    spdlog::debug("res change {} : {} : {}\n",x,y, x * y);
+    spdlog::trace("res change {} : {} : {}\n",x,y, x * y);
 
     if(x != rdp.screen_x || y != rdp.screen_y)
     {
