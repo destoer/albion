@@ -137,8 +137,6 @@ void n64_run_tests()
 
     Test TESTS[] = 
     {
-        // {"N64/CPUTest/CPU//CPU.N64","N64/CPUTest/CPU//CPU.png","KROM_CPU_",5},
-        // {"N64/CPUTest/CPU/LOADSTORE//CPU.N64","N64/CPUTest/CPU/LOADSTORE//CPU.png","KROM_CPU_",5},
         {"N64/CPUTest/CPU/ADD/CPUADD.N64","N64/CPUTest/CPU/ADD/CPUADD.png","KROM_CPU_ADD",5},
         {"N64/CPUTest/CPU/AND/CPUAND.N64","N64/CPUTest/CPU/AND/CPUAND.png","KROM_CPU_AND",5},
         {"N64/CPUTest/CPU/ADDU/CPUADDU.N64","N64/CPUTest/CPU/ADDU/CPUADDU.png","KROM_CPU_ADDU",5},
@@ -177,6 +175,29 @@ void n64_run_tests()
 
         {"N64/CPUTest/CPU/SUB/CPUSUB.N64","N64/CPUTest/CPU/SUB/CPUSUB.png","KROM_CPU_SUB",5},
         {"N64/CPUTest/CPU/SUBU/CPUSUBU.N64","N64/CPUTest/CPU/SUBU/CPUSUBU.png","KROM_CPU_SUBU",5},
+
+        {"N64/CPUTest/CPU/SHIFT/DSLL/CPUDSLL.N64","N64/CPUTest/CPU/SHIFT/DSLL/CPUDSLL.png","KROM_CPU_CPUDSLL",5},
+        {"N64/CPUTest/CPU/SHIFT/DSLL32/CPUDSLL32.N64","N64/CPUTest/CPU/SHIFT/DSLL32/CPUDSLL32.png","KROM_CPU_CPUDSLL32",5},
+        {"N64/CPUTest/CPU/SHIFT/DSLLV/CPUDSLLV.N64","N64/CPUTest/CPU/SHIFT/DSLLV/CPUDSLLV.png","KROM_CPU_CPUDSLLV",5},
+
+        {"N64/CPUTest/CPU/SHIFT/DSRA/CPUDSRA.N64","N64/CPUTest/CPU/SHIFT/DSRA/CPUDSRA.png","KROM_CPU_DSRA",5},
+        {"N64/CPUTest/CPU/SHIFT/DSRA32/CPUDSRA32.N64","N64/CPUTest/CPU/SHIFT/DSRA32/CPUDSRA32.png","KROM_CPU_DSRA32",5},
+        {"N64/CPUTest/CPU/SHIFT/DSRAV/CPUDSRAV.N64","N64/CPUTest/CPU/SHIFT/DSRAV/CPUDSRAV.png","KROM_CPU_DSRAV",5},
+
+        {"N64/CPUTest/CPU/SHIFT/DSRL/CPUDSRL.N64","N64/CPUTest/CPU/SHIFT/DSRL/CPUDSRL.png","KROM_CPU_DSRL",5},
+        {"N64/CPUTest/CPU/SHIFT/DSRL32/CPUDSRL32.N64","N64/CPUTest/CPU/SHIFT/DSRL32/CPUDSRL32.png","KROM_CPU_DSRL32",5},
+        {"N64/CPUTest/CPU/SHIFT/DSRLV/CPUDSRLV.N64","N64/CPUTest/CPU/SHIFT/DSRLV/CPUDSRLV.png","KROM_CPU_DSRLV",5},
+
+        {"N64/CPUTest/CPU/SHIFT/SLL/CPUSLL.N64","N64/CPUTest/CPU/SHIFT/SLL/CPUSLL.png","KROM_CPU_CPUSLL",5},
+        {"N64/CPUTest/CPU/SHIFT/SLLV/CPUSLLV.N64","N64/CPUTest/CPU/SHIFT/SLLV/CPUSLLV.png","KROM_CPU_CPUSLLV",5},
+
+        {"N64/CPUTest/CPU/SHIFT/SRA/CPUSRA.N64","N64/CPUTest/CPU/SHIFT/SRA/CPUSRA.png","KROM_CPU_CPUSRA",5},
+        {"N64/CPUTest/CPU/SHIFT/SRAV/CPUSRAV.N64","N64/CPUTest/CPU/SHIFT/SRAV/CPUSRAV.png","KROM_CPU_CPUSRAV",5},
+
+        {"N64/CPUTest/CPU/SHIFT/SRL/CPUSRL.N64","N64/CPUTest/CPU/SHIFT/SRL/CPUSRL.png","KROM_CPU_CPUSRL",5},
+        {"N64/CPUTest/CPU/SHIFT/SRLV/CPUSRLV.N64","N64/CPUTest/CPU/SHIFT/SRLV/CPUSRLV.png","KROM_CPU_CPUSRLV",5},
+
+        {"N64/CPUTest/CPU/XOR/CPUXOR.N64","N64/CPUTest/CPU/XOR/CPUXOR.png","KROM_CPU_XOR",5},
     };
 
     int TEST_SIZE = sizeof(TESTS) / sizeof(Test);
@@ -187,9 +208,9 @@ void n64_run_tests()
     std::vector<std::string> pass_list;
     std::vector<std::string> fail_list;
 
-    try
+    for(int t = 0; t < TEST_SIZE; t++)
     {
-        for(int t = 0; t < TEST_SIZE; t++)
+        try
         {
             auto& test = TESTS[t];
             spdlog::info("start test: {}\n",test.name);
@@ -258,21 +279,23 @@ void n64_run_tests()
                 }
             }
         }
-    }
 
-    catch(std::exception &ex)
-    {
-        std::cout << fmt::format("{}: \n",ex.what());
+        catch(std::exception &ex)
+        {
+            spdlog::error("{}: \n",ex.what());
+            fail_list.push_back(TESTS[t].rom_path);
+        }
     }
+    
 
-    spdlog::info("---------- PASS({}) ------- \n",pass_list.size());
+    spdlog::info("---------- PASS({}) ------- ",pass_list.size());
 
     for(auto& name : pass_list)
     {
         spdlog::info("PASS: {}",name);
     }
 
-    spdlog::info("\n---------- FAIL({}) ------- \n",fail_list.size());
+    spdlog::info("---------- FAIL({}) ------- ",fail_list.size());
 
     for(auto& name : fail_list)
     {
