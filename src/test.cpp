@@ -265,14 +265,14 @@ void n64_run_tests()
         std::cout << fmt::format("{}: \n",ex.what());
     }
 
-    spdlog::info("---------- PASS ------- \n");
+    spdlog::info("---------- PASS({}) ------- \n",pass_list.size());
 
     for(auto& name : pass_list)
     {
         spdlog::info("PASS: {}",name);
     }
 
-    spdlog::info("\n---------- FAIL ------- \n");
+    spdlog::info("\n---------- FAIL({}) ------- \n",fail_list.size());
 
     for(auto& name : fail_list)
     {
