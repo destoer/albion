@@ -64,7 +64,7 @@ void write_ai(N64& n64, u64 addr ,u32 v)
         {
             ai.dac_rate = (v & 0b1111'1111'1111'11);
             ai.freq = VIDEO_CLOCK / (ai.dac_rate + 1);
-            spdlog::debug("freq : %d\n",ai.freq);
+            spdlog::debug("freq : {}\n",ai.freq);
             ai.freq = 44100;
             break; 
         }
