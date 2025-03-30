@@ -41,6 +41,7 @@ void do_si_dma(N64& n64, u64 src, u64 dst)
 
 void write_si(N64& n64, u64 addr, u32 v)
 {
+    spdlog::trace("SI write [0x{:x}] = 0x{:x}",addr,v);
     auto& si = n64.mem.si;
 
     switch(addr)
@@ -55,6 +56,7 @@ void write_si(N64& n64, u64 addr, u32 v)
         case SI_DRAM_ADDR:
         {
             si.dram_addr = v & 0x00ff'ffff;
+            spdlog::trace("SI dram addr: {}",si.dram_addr);
             break;
         }
 
@@ -89,6 +91,7 @@ void write_si(N64& n64, u64 addr, u32 v)
 
 u32 read_si(N64& n64, u64 addr)
 {
+    spdlog::trace("SI read [0x{:x}]",addr);
     auto& si = n64.mem.si;
 
     switch(addr)

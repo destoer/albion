@@ -43,7 +43,8 @@ void audio_event(N64& n64)
 
 void write_ai(N64& n64, u64 addr ,u32 v)
 {
-    auto& ai = n64.mem.ai;
+    spdlog::trace("AI write [0x{:x}] = 0x{:x}",addr,v);
+    auto& ai = n64.mem.ai; 
 
     switch(addr)
     {
@@ -57,6 +58,8 @@ void write_ai(N64& n64, u64 addr ,u32 v)
         case AI_CONTROL:
         {
             ai.enabled = is_set(v,0);
+            spdlog::trace("Audio interface enable: {}",ai.enabled);
+
             break;
         } 
 
@@ -64,20 +67,22 @@ void write_ai(N64& n64, u64 addr ,u32 v)
         {
             ai.dac_rate = (v & 0b1111'1111'1111'11);
             ai.freq = VIDEO_CLOCK / (ai.dac_rate + 1);
-            spdlog::debug("freq : {}\n",ai.freq);
             ai.freq = 44100;
+            spdlog::trace("AI freq : {}, Dac rate {}\n",ai.freq,ai.dac_rate);
             break; 
         }
 
         case AI_BITRATE:
         {
             ai.bit_rate = (v & 0b1111) + 1;
+            spdlog::trace("AI bit rate: {}",ai.bit_rate);
             break;
         }
 
         case AI_DRAM_ADDR:
         {
             ai.dram_addr = v & 0x00ff'ffff;
+            spdlog::trace("AI dram addr: 0x{:x}",ai.dram_addr);
             break;
         }
 
@@ -105,6 +110,7 @@ void write_ai(N64& n64, u64 addr ,u32 v)
                     ai.full = true;
                 }
             }
+            spdlog::trace("AI length: {}",ai.length);
             break;
         }
 
@@ -118,6 +124,7 @@ void write_ai(N64& n64, u64 addr ,u32 v)
 
 u32 read_ai(N64& n64, u64 addr)
 {
+    spdlog::trace("AI read [0x{:x}]",addr);
     auto& ai = n64.mem.ai;
 
     switch(addr)

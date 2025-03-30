@@ -30,6 +30,7 @@ u32 read_rdram_regs(N64& n64, u64 addr)
 
 void write_ri(N64& n64, u64 addr ,u32 v)
 {
+    spdlog::trace("RI write [0x{:x}] = 0x{:x}",addr,v);
     auto& ri = n64.mem.ri;
 
     switch(addr)
@@ -46,6 +47,7 @@ void write_ri(N64& n64, u64 addr ,u32 v)
 
 u32 read_ri(N64& n64, u64 addr)
 {
+    spdlog::trace("AI read [0x{:x}]",addr);
     auto& ri = n64.mem.ri;
 
     switch(addr)

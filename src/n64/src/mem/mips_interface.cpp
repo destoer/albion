@@ -46,6 +46,7 @@ void deset_mi_interrupt(N64& n64, u32 bit)
 
 void write_mi(N64& n64, u64 addr, u32 v)
 {
+    spdlog::trace("MI write [0x{:x}] = 0x{:x}",addr,v);
     auto& mi = n64.mem.mi;
 
     switch(addr)
@@ -57,6 +58,7 @@ void write_mi(N64& n64, u64 addr, u32 v)
             {
                 deset_mi_interrupt(n64,DP_INTR_BIT);
             }
+            spdlog::trace("MI mode {:x}",mi.mode);
             break;
         }
 
@@ -85,6 +87,7 @@ void write_mi(N64& n64, u64 addr, u32 v)
 
             mi.mask = deset_bitset_if_set(mi.mask,v,10,DP_INTR_BIT);
             mi.mask = set_bitset_if_set(mi.mask,v,11,DP_INTR_BIT);
+            spdlog::trace("MI mask: {}",mi.mask);
             check_mi_interrupts(n64);
             break;
         }
@@ -95,6 +98,7 @@ void write_mi(N64& n64, u64 addr, u32 v)
 
 u32 read_mi(N64& n64, u64 addr)
 {
+    spdlog::trace("MI read [0x{:x}]",addr);
     auto& mi = n64.mem.mi;
 
     switch(addr)

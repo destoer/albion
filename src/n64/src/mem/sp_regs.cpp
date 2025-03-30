@@ -102,6 +102,7 @@ u32 read_sp_dma(SpDma& reg)
 
 void write_sp_regs(N64& n64, u64 addr ,u32 v)
 {
+    spdlog::trace("SP write [0x{:x}] = 0x{:x}",addr,v);
     auto& sp = n64.mem.sp_regs;
 
     switch(addr)
@@ -198,6 +199,7 @@ void write_sp_regs(N64& n64, u64 addr ,u32 v)
 
 u32 read_sp_regs(N64& n64, u64 addr)
 {
+    spdlog::trace("SP read [0x{:x}]",addr);
     auto& sp = n64.mem.sp_regs;
 
     switch(addr)

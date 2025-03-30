@@ -208,6 +208,11 @@ void write_entry_lo(EntryLo& entry_lo, u32 v)
     entry_lo.g = is_set(v,0);
 }
 
+void log_entry_lo(const std::string& TAG,EntryLo& entry_lo)
+{
+    spdlog::trace("{} pfn 0x{:x}, c {}, d {}, v {}, g {}",TAG,entry_lo.pfn,entry_lo.c,entry_lo.d,entry_lo.v,entry_lo.g);
+}
+
 u32 read_entry_lo(EntryLo& entry_lo)
 {
     return (entry_lo.g << 0) | (entry_lo.v << 1) | (entry_lo.d << 2) | 
@@ -229,6 +234,8 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
 
             n64.scheduler.remove(n64_event::count,false);
             cop0.count = v;
+
+            spdlog::trace("COP0 count", cop0.count);
             insert_count_event(n64);
             break;
         }
@@ -244,12 +251,14 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
 
             // ip7 in cause is reset when this is written
             deset_intr_cop0(n64,COUNT_BIT);
+            spdlog::trace("COP0 compare",cop0.compare);
             break;
         }
         
         case beyond_all_repair::TAGLO:
         {
             cop0.tagLo = v;
+            spdlog::trace("COP0 tagLo",cop0.tagLo);
             break;
         }
 
@@ -286,6 +295,12 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
             status.cu3 = is_set(v,31);
 
 
+            spdlog::trace("COP0 status: ");
+            spdlog::trace("ie {}, exl {}, erl {}, ksu {}",status.ie,status.exl,status.erl,status.ksu);
+            spdlog::trace("ux {}, sx {}, kx {}",status.ux,status.sx,status.kx);
+            spdlog::trace("im {}, ds {}, re {}, fr {}, rp {}",status.im,status.ds,status.re,status.fr,status.rp);
+            spdlog::trace("cu0 {}, cu1 {}, cu2 {}, cu3 {}",status.cu0,status.cu1,status.cu2,status.cu3);
+
             if(status.rp)
             {
                 unimplemented("low power mode");
@@ -315,6 +330,7 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
 
             // write can only modify lower 2 bits of interrupt pending
             cause.pending = (cause.pending & ~PENDING_MASK)  | ((v >> 8) & PENDING_MASK);
+            spdlog::trace("COP0 Cause pennding: 0x{:x}",cause.pending);
             check_interrupts(n64);
             break;
         }
@@ -325,18 +341,21 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
             entry_hi.asid = v & 0xff; 
             entry_hi.vpn2 = (v >> 13) & 0x7'ff'ff'ff;
             entry_hi.region = (v >> 62) & 0b11;
+            spdlog::trace("COP0 entry_hi asid 0x{:x}, vpn2 0x{:x}, region 0x{:x}",entry_hi.asid,entry_hi.vpn2,entry_hi.region);
             break;
         }
 
         case beyond_all_repair::ENTRY_LO_ZERO:
         {
             write_entry_lo(cop0.entry_lo_zero,v);
+            log_entry_lo("COP0 EntryLoZero",cop0.entry_lo_zero);
             break;
         }
 
         case beyond_all_repair::ENTRY_LO_ONE:
         {
             write_entry_lo(cop0.entry_lo_one,v);
+            log_entry_lo("COP0 EntryLoOne",cop0.entry_lo_one);
             break;
         }
 
@@ -346,12 +365,14 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
             cop0.config.endianness = is_set(v, 14);
             cop0.config.cu = is_set(v, 2);
             cop0.config.k0 = v & 0b11;
+            spdlog::trace("COP0 Config transfer mode {}, endianess {}, cu {}, k0 {}",cop0.config.transfer_mode,cop0.config.endianness,cop0.config.cu,cop0.config.k0);
             break;
         }
 
         case beyond_all_repair::XCONFIG:
         {
             cop0.xconfig.pte = v >> 32;
+            spdlog::trace("COP0 xconfig pte 0x{:x}",cop0.xconfig.pte);
             break;
         }
 
@@ -359,6 +380,7 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
         {
             cop0.wired = (v >> 5) & 0b11111;
             cop0.random = 31;
+            spdlog::trace("COP0 Wired wire {}, random {}",cop0.wired,cop0.random);
             break;
         }
 
@@ -367,36 +389,42 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
             auto& index = cop0.index;
             index.p = is_set(v,31);
             index.idx = v & 0b111'111;
+            spdlog::trace("COP0 Index p {}, idx {}",index.p,index.idx);
             break;
         }
 
         case beyond_all_repair::PAGE_MASK:
         {
             cop0.page_mask = (v >> 13) & 0xfff;
+            spdlog::trace("COP0 Page mask 0x{:x}",cop0.page_mask);
             break;
         }
 
         case beyond_all_repair::EPC:
         {
             cop0.epc = v;
+            spdlog::trace("COP0 EPC 0x{:x}",cop0.epc);
             break;
         }
 
         case beyond_all_repair::ERROR_EPC:
         {
             cop0.error_epc = v;
+            spdlog::trace("COP0 Error EPC 0x{:x}",cop0.error_epc);
             break;
         }
 
         case beyond_all_repair::BAD_VADDR:
         {
             cop0.bad_vaddr = v;
+            spdlog::trace("COP0 Bad vaddr 0x{:x}",cop0.bad_vaddr);
             break;
         }
 
         case beyond_all_repair::LLADDR:
         {
             cop0.load_linked = v;
+            spdlog::trace("COP0 LLADDR 0x{:x}",cop0.load_linked);
             break;   
         }
 
@@ -405,12 +433,14 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
             cop0.watchLo.paddr0 = v >> 3;
             cop0.watchLo.read = is_set(v,1);
             cop0.watchLo.write = is_set(v,0);
+            spdlog::trace("COP0 WATCH_LO paddr0 0x{:x}, read {}, write {}",cop0.watchLo.paddr0,cop0.watchLo.read,cop0.watchLo.write);
             break;
         }
 
         case beyond_all_repair::WATCH_HI:
         {
             cop0.watchHi.paddr1 = v & 0b111;
+            spdlog::trace("COP0 WATCH_HI paddr1 0x{:x}",cop0.watchHi.paddr1);
             break;
         }
 

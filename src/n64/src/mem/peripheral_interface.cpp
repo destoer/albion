@@ -41,6 +41,7 @@ void do_pi_dma(N64 &n64, u32 src, u32 dst, u32 len)
 
 void write_pi(N64& n64, u64 addr, u32 v)
 {
+    spdlog::trace("PI write [0x{:x}] = 0x{:x}",addr,v);
     auto& pi = n64.mem.pi;
 
     switch(addr)
@@ -49,6 +50,7 @@ void write_pi(N64& n64, u64 addr, u32 v)
         {
             // aligned on 2 bytes
             pi.cart_addr = v;
+            spdlog::trace("PI cart addr: {}",pi.cart_addr);
             break;
         }
 
@@ -56,6 +58,7 @@ void write_pi(N64& n64, u64 addr, u32 v)
         {
             // aligned on 8 bytes
             pi.dram_addr = v & 0xffffff;
+            spdlog::trace("PI dram addr: {}",pi.dram_addr);
             break;
         }
 
@@ -66,6 +69,7 @@ void write_pi(N64& n64, u64 addr, u32 v)
             pi.wr_len = v & 0xffffff;
             
             do_pi_dma(n64,pi.cart_addr,pi.dram_addr,pi.wr_len + 1);
+            spdlog::trace("PI wr len: {}",pi.wr_len);
             break;
         }
 
@@ -108,6 +112,7 @@ void write_pi(N64& n64, u64 addr, u32 v)
 
 u32 read_pi(N64& n64, u64 addr)
 {
+    spdlog::trace("PI read [0x{:x}]",addr);
     auto& pi = n64.mem.pi;
 
     switch(addr)
