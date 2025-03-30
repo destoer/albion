@@ -133,7 +133,7 @@ struct Test
     bool override_image = false;
 };
 
-Test CPU_TESTS[] = 
+static constexpr Test CPU_TESTS[] = 
 {
     {"ADD/CPUADD.N64","ADD/CPUADD.png","KROM_CPU_ADD",5},
     {"AND/CPUAND.N64","AND/CPUAND.png","KROM_CPU_AND",5},
@@ -201,85 +201,95 @@ Test CPU_TESTS[] =
 static constexpr u32 CPU_TEST_SIZE = sizeof(CPU_TESTS) / sizeof(Test);
 
 
-Test COP1_TESTS[] = 
+static constexpr Test COP1_TESTS[] = 
 {
     // {".N64",".png","KROM_COP1_",5},
     // {"C//CP1C.N64","C//CP1C.png","KROM_COP1_C",5},
     // {"C/FPUCompare/FPUCompare-c..N64","C/FPUCompare/FPUCompare-c..png","KROM_COP1_C",5},
 
-    // {"ABS/CP1ABS.N64","ABS/CP1ABS.png","KROM_COP1_ABS",5},
-    // {"ADD/CP1ADD.N64","ADD/CP1ADD.png","KROM_COP1_ADD",5},
+    {"ABS/CP1ABS.N64","ABS/CP1ABS.png","KROM_COP1_ABS",5},
+    {"ADD/CP1ADD.N64","ADD/CP1ADD.png","KROM_COP1_ADD",5},
 
-    // // Cmp tests
-    // {"C/EQ/CP1CEQ.N64","C/EQ/CP1CEQ.png","KROM_COP1_CEQ",5},
-    // {"C/F/CP1CF.N64","C/F/CP1CF.png","KROM_COP1_CF",5},
+    // Cmp tests
+    {"C/EQ/CP1CEQ.N64","C/EQ/CP1CEQ.png","KROM_COP1_CEQ",5},
+    {"C/F/CP1CF.N64","C/F/CP1CF.png","KROM_COP1_CF",5},
 
-    // {"C/LE/CP1CLE.N64","C/LE/CP1CLE.png","KROM_COP1_CLE",5},
-    // {"C/LT/CP1CLT.N64","C/LT/CP1CLT.png","KROM_COP1_CLT",5},
+    {"C/LE/CP1CLE.N64","C/LE/CP1CLE.png","KROM_COP1_CLE",5},
+    {"C/LT/CP1CLT.N64","C/LT/CP1CLT.png","KROM_COP1_CLT",5},
 
-    // {"C/NGE/CP1CNGE.N64","C/NGE/CP1CNGE.png","KROM_COP1_CNGE",5},
-    // {"C/NGLE/CP1CNGLE.N64","C/NGLE/CP1CNGLE.png","KROM_COP1_CNGLE",5},
+    {"C/NGE/CP1CNGE.N64","C/NGE/CP1CNGE.png","KROM_COP1_CNGE",5},
+    {"C/NGLE/CP1CNGLE.N64","C/NGLE/CP1CNGLE.png","KROM_COP1_CNGLE",5},
 
-    // {"C/NGT/CP1CNGT.N64","C/NGT/CP1CNGT.png","KROM_COP1_CNGT",5},
-    // {"C/OLE/CP1COLE.N64","C/OLE/CP1COLE.png","KROM_COP1_COLE",5},
+    {"C/NGT/CP1CNGT.N64","C/NGT/CP1CNGT.png","KROM_COP1_CNGT",5},
+    {"C/OLE/CP1COLE.N64","C/OLE/CP1COLE.png","KROM_COP1_COLE",5},
 
-    // {"C/OLT/CP1COLT.N64","C/OLT/CP1COLT.png","KROM_COP1_COLT",5},
-    // {"C/SEQ/CP1CSEQ.N64","C/SEQ/CP1CSEQ.png","KROM_COP1_CSEQ",5},
+    {"C/OLT/CP1COLT.N64","C/OLT/CP1COLT.png","KROM_COP1_COLT",5},
+    {"C/SEQ/CP1CSEQ.N64","C/SEQ/CP1CSEQ.png","KROM_COP1_CSEQ",5},
 
-    // {"C/SF/CP1CSF.N64","C/SF/CP1CSF.png","KROM_COP1_CSF",5},
-    // {"C/UEQ/CP1CUEQ.N64","C/UEQ/CP1CUEQ.png","KROM_COP1_CUEQ",5},
+    {"C/SF/CP1CSF.N64","C/SF/CP1CSF.png","KROM_COP1_CSF",5},
+    {"C/UEQ/CP1CUEQ.N64","C/UEQ/CP1CUEQ.png","KROM_COP1_CUEQ",5},
 
-    // {"C/ULE/CP1CULE.N64","C/ULE/CP1CULE.png","KROM_COP1_CULE",5},
-    // {"C/ULT/CP1CULT.N64","C/ULT/CP1CULT.png","KROM_COP1_CULT",5},
+    {"C/ULE/CP1CULE.N64","C/ULE/CP1CULE.png","KROM_COP1_CULE",5},
+    {"C/ULT/CP1CULT.N64","C/ULT/CP1CULT.png","KROM_COP1_CULT",5},
 
-    // {"C/UN/CP1CUN.N64","C/UN/CP1CUN.png","KROM_COP1_CUN",5},
+    {"C/UN/CP1CUN.N64","C/UN/CP1CUN.png","KROM_COP1_CUN",5},
 
-    // FPU compare
-    {"C/FPUCompare/FPUCompare-c.eq.s.N64","C/FPUCompare/FPUCompare-c.eq.s.png","KROM_COP1_C.EQ.S",5},
-    {"C/FPUCompare/FPUCompare-c.f.s.N64","C/FPUCompare/FPUCompare-c.f.s.png","KROM_COP1_C.F.S",5},
+    // FPU compare (TODO: Why do these flicker?)
+    // {"C/FPUCompare/FPUCompare-c.eq.s.N64","C/FPUCompare/FPUCompare-c.eq.s.png","KROM_COP1_C.EQ.S",5},
+    // {"C/FPUCompare/FPUCompare-c.f.s.N64","C/FPUCompare/FPUCompare-c.f.s.png","KROM_COP1_C.F.S",5},
 
-    {"C/FPUCompare/FPUCompare-c.le.s.N64","C/FPUCompare/FPUCompare-c.le.s.png","KROM_COP1_C.LE.S",5},
-    {"C/FPUCompare/FPUCompare-c.lt.s.N64","C/FPUCompare/FPUCompare-c.lt.s.png","KROM_COP1_C.LT.S",5},
+    // {"C/FPUCompare/FPUCompare-c.le.s.N64","C/FPUCompare/FPUCompare-c.le.s.png","KROM_COP1_C.LE.S",5},
+    // {"C/FPUCompare/FPUCompare-c.lt.s.N64","C/FPUCompare/FPUCompare-c.lt.s.png","KROM_COP1_C.LT.S",5},
 
-    {"C/FPUCompare/FPUCompare-c.nge.s.N64","C/FPUCompare/FPUCompare-c.nge.s.png","KROM_COP1_C.NGE.S",5},
-    {"C/FPUCompare/FPUCompare-c.ngl.s.N64","C/FPUCompare/FPUCompare-c.ngl.s.png","KROM_COP1_C.NGL.S",5},
+    // {"C/FPUCompare/FPUCompare-c.nge.s.N64","C/FPUCompare/FPUCompare-c.nge.s.png","KROM_COP1_C.NGE.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ngl.s.N64","C/FPUCompare/FPUCompare-c.ngl.s.png","KROM_COP1_C.NGL.S",5},
    
-    {"C/FPUCompare/FPUCompare-c.ngle.s.N64","C/FPUCompare/FPUCompare-c.ngle.s.png","KROM_COP1_C.NGLE.S",5},
-    {"C/FPUCompare/FPUCompare-c.ngt.s.N64","C/FPUCompare/FPUCompare-c.ngt.s.png","KROM_COP1_C.NGT.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ngle.s.N64","C/FPUCompare/FPUCompare-c.ngle.s.png","KROM_COP1_C.NGLE.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ngt.s.N64","C/FPUCompare/FPUCompare-c.ngt.s.png","KROM_COP1_C.NGT.S",5},
 
-    {"C/FPUCompare/FPUCompare-c.ole.s.N64","C/FPUCompare/FPUCompare-c.ole.s.png","KROM_COP1_C.OLE.S",5},
-    {"C/FPUCompare/FPUCompare-c.olt.s.N64","C/FPUCompare/FPUCompare-c.olt.s.png","KROM_COP1_C.OLT.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ole.s.N64","C/FPUCompare/FPUCompare-c.ole.s.png","KROM_COP1_C.OLE.S",5},
+    // {"C/FPUCompare/FPUCompare-c.olt.s.N64","C/FPUCompare/FPUCompare-c.olt.s.png","KROM_COP1_C.OLT.S",5},
 
-    {"C/FPUCompare/FPUCompare-c.seq.s.N64","C/FPUCompare/FPUCompare-c.seq.s.png","KROM_COP1_C.SEQ.S",5},
-    {"C/FPUCompare/FPUCompare-c.sf.s.N64","C/FPUCompare/FPUCompare-c.sf.s.png","KROM_COP1_C.SF.S",5},
+    // {"C/FPUCompare/FPUCompare-c.seq.s.N64","C/FPUCompare/FPUCompare-c.seq.s.png","KROM_COP1_C.SEQ.S",5},
+    // {"C/FPUCompare/FPUCompare-c.sf.s.N64","C/FPUCompare/FPUCompare-c.sf.s.png","KROM_COP1_C.SF.S",5},
 
-    {"C/FPUCompare/FPUCompare-c.ueq.s.N64","C/FPUCompare/FPUCompare-c.ueq.s.png","KROM_COP1_C.UEQ.S",5},
-    {"C/FPUCompare/FPUCompare-c.ule.s.N64","C/FPUCompare/FPUCompare-c.ule.s.png","KROM_COP1_C.ULE.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ueq.s.N64","C/FPUCompare/FPUCompare-c.ueq.s.png","KROM_COP1_C.UEQ.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ule.s.N64","C/FPUCompare/FPUCompare-c.ule.s.png","KROM_COP1_C.ULE.S",5},
 
-    {"C/FPUCompare/FPUCompare-c.ult.s.N64","C/FPUCompare/FPUCompare-c.ult.s.png","KROM_COP1_C.ULT.S",5},
-    {"C/FPUCompare/FPUCompare-c.un.s.N64","C/FPUCompare/FPUCompare-c.un.s.png","KROM_COP1_C.UN.S",5},
+    // {"C/FPUCompare/FPUCompare-c.ult.s.N64","C/FPUCompare/FPUCompare-c.ult.s.png","KROM_COP1_C.ULT.S",5},
+    // {"C/FPUCompare/FPUCompare-c.un.s.N64","C/FPUCompare/FPUCompare-c.un.s.png","KROM_COP1_C.UN.S",5},
 
-    // {"CEIL/CP1CEIL.N64","CEIL/CP1CEIL.png","KROM_COP1_CEIL",5},
-    // {"COP1FullMode/COP1FullMode.N64","COP1FullMode/COP1FullMode.png","KROM_COP1_FULL_MODE",5},
+    {"CEIL/CP1CEIL.N64","CEIL/CP1CEIL.png","KROM_COP1_CEIL",5},
+    {"COP1FullMode/COP1FullMode.N64","COP1FullMode/COP1FullMode.png","KROM_COP1_FULL_MODE",5},
 
-    // {"CVT/CP1CVT.N64","CVT/CP1CVT.png","KROM_COP1_CVT",5},
-    // {"DIV/CP1DIV.N64","DIV/CP1DIV.png","KROM_COP1_DIV",5},
+    {"CVT/CP1CVT.N64","CVT/CP1CVT.png","KROM_COP1_CVT",5},
+    {"DIV/CP1DIV.N64","DIV/CP1DIV.png","KROM_COP1_DIV",5},
 
-    // {"FLOOR/CP1FLOOR.N64","FLOOR/CP1FLOOR.png","KROM_COP1_FLOOR",5},
-    // {"MUL/CP1MUL.N64","MUL/CP1MUL.png","KROM_COP1_MUL",5},
+    {"FLOOR/CP1FLOOR.N64","FLOOR/CP1FLOOR.png","KROM_COP1_FLOOR",5},
+    {"MUL/CP1MUL.N64","MUL/CP1MUL.png","KROM_COP1_MUL",5},
 
-    // {"NEG/CP1NEG.N64","NEG/CP1NEG.png","KROM_COP1_NEG",5},
-    // {"ROUND/CP1ROUND.N64","ROUND/CP1ROUND.png","KROM_COP1_ROUND",5},
+    {"NEG/CP1NEG.N64","NEG/CP1NEG.png","KROM_COP1_NEG",5},
+    {"ROUND/CP1ROUND.N64","ROUND/CP1ROUND.png","KROM_COP1_ROUND",5},
 
-    // {"SQRT/CP1SQRT.N64","SQRT/CP1SQRT.png","KROM_COP1_SQRT",5},
-    // {"SUB/CP1SUB.N64","SUB/CP1SUB.png","KROM_COP1_SUB",5},
+    {"SQRT/CP1SQRT.N64","SQRT/CP1SQRT.png","KROM_COP1_SQRT",5},
+    {"SUB/CP1SUB.N64","SUB/CP1SUB.png","KROM_COP1_SUB",5},
     
-    // {"TRUNC/CP1TRUNC.N64","TRUNC/CP1TRUNC.png","KROM_COP1_TRUNC",5},
+    {"TRUNC/CP1TRUNC.N64","TRUNC/CP1TRUNC.png","KROM_COP1_TRUNC",5},
 };
 
 static constexpr u32 COP1_TEST_SIZE = sizeof(COP1_TESTS) / sizeof(Test);
 
-void run_test_list(const std::string suite_name, const std::string base_path,Test test_list[],u32 test_size)
+
+static constexpr Test COP0_TESTS[] = 
+{
+    {"COP0Cause/COP0Cause.N64","COP0Cause/COP0Cause.png","KROM_COP0_CAUSE",30},
+    {"COP0Register/COP0Register.N64","COP0Register/COP0Register - before overflow.png","KROM_COP0_REGISTER",5},
+};
+
+static constexpr u32 COP0_TEST_SIZE = sizeof(COP0_TESTS) / sizeof(Test);
+
+std::pair<std::vector<std::string>,std::vector<std::string>> run_test_list(const std::string suite_name, const std::string base_path,
+    const Test test_list[],u32 test_size)
 {
     spdlog::info("n64 tests ({}): {}\n",suite_name,base_path);
     
@@ -313,7 +323,7 @@ void run_test_list(const std::string suite_name, const std::string base_path,Tes
             if(error)
             {
                 spdlog::error("cannot find reference image\n");
-                return;
+                return std::pair{pass_list,fail_list};
             }
 
             // Can find file -> compare the images
@@ -366,28 +376,68 @@ void run_test_list(const std::string suite_name, const std::string base_path,Tes
         }
     }
     
+    return std::pair{pass_list,fail_list};
+}
 
-    spdlog::info("---------- PASS {} ({}) ------- ",suite_name,pass_list.size());
-
-    for(auto& name : pass_list)
+void print_test_result(const std::string& suite_name, const std::vector<std::string> test_list, bool pass)
+{
+    if(test_list.size() == 0)
     {
-        spdlog::info("PASS: {}",name);
+        return;
     }
 
-    spdlog::info("---------- FAIL {} ({}) ------- ",suite_name,fail_list.size());
+    const std::string result = pass? "PASS" : "FAIL";
 
-    for(auto& name : fail_list)
+    if(pass)
     {
-        spdlog::error("FAIL: {}",name);
+        spdlog::info("---------- {} {} ({}) ------- ",result,suite_name,test_list.size());
+    }
+
+    else
+    {
+        spdlog::error("---------- {} {} ({}) ------- ",result,suite_name,test_list.size());
+    }
+
+    for(auto& name : test_list)
+    {
+        if(pass)
+        {
+            spdlog::info("{}: {}",result,name);
+        }
+
+        else
+        {
+            spdlog::error("{}: {}",result,name);
+        }
     }
 }
 
+void print_test_pass(const std::string& suite_name, const std::vector<std::string> test_list)
+{
+    print_test_result(suite_name,test_list,true);
+}
+
+void print_test_fail(const std::string& suite_name, const std::vector<std::string> test_list)
+{
+    print_test_result(suite_name,test_list,false);
+}
+
+
 void n64_run_tests()
 {
-    // run_test_list("CPU TEST","N64/CPUTest/CPU",CPU_TESTS,CPU_TEST_SIZE);
+    const auto [cpu_pass,cpu_fail] = run_test_list("CPU TEST","N64/CPUTest/CPU",CPU_TESTS,CPU_TEST_SIZE);
+    const auto [cp0_pass,cp0_fail] = run_test_list("COP0 TEST","N64/CPUTest/CP0",COP0_TESTS,COP0_TEST_SIZE);
+    const auto [cp1_pass,cp1_fail] = run_test_list("COP1 TEST","N64/CPUTest/CP1",COP1_TESTS,COP1_TEST_SIZE);
 
-    run_test_list("COP1 TEST","N64/CPUTest/CP1",COP1_TESTS,COP1_TEST_SIZE);
+    // Print a list of passes 
+    print_test_pass("CPU TEST",cpu_pass);
+    print_test_pass("COP0 TEST",cp0_pass);
+    print_test_pass("COP1 TEST",cp1_pass);
 
+    // And failures
+    print_test_fail("CPU TEST",cpu_fail);
+    print_test_fail("COP0 TEST",cp0_fail);
+    print_test_fail("COP1 TEST",cp1_fail);
 }
 #endif
 
