@@ -226,17 +226,18 @@ u32 remap_addr(N64& n64,u32 addr)
 template<typename access_type>
 void write_mem_internal(N64& n64, u32 addr, access_type v)
 {
-    auto& mem = n64.mem;
 
     // force align addr
     addr &= ~(sizeof(access_type)-1);   
 
-    const u32 idx = addr / PAGE_SIZE;
+    // auto& mem = n64.mem;
 
-    if(mem.page_table_write[idx])
-    {
-        return handle_write_n64<access_type>(mem.page_table_write[idx],addr & (PAGE_SIZE - 1),v);
-    }
+    // const u32 idx = addr / PAGE_SIZE;
+
+    // if(mem.page_table_write[idx])
+    // {
+    //     return handle_write_n64<access_type>(mem.page_table_write[idx],addr & (PAGE_SIZE - 1),v);
+    // }
 
     // if we are doing a slow access remap the addr manually
     addr = remap_addr<access_type,false>(n64,addr);
@@ -286,17 +287,18 @@ void write_physical_debug(N64 &n64, u32 addr, access_type v)
 template<typename access_type>
 access_type read_mem_internal(N64& n64, u32 addr)
 {
-    auto& mem = n64.mem;
 
     // force align addr
     addr &= ~(sizeof(access_type)-1);   
 
-    const u32 idx = addr / PAGE_SIZE;
+    // auto& mem = n64.mem;
 
-    if(mem.page_table_read[idx])
-    {
-        return handle_read_n64<access_type>(mem.page_table_read[idx],addr & (PAGE_SIZE - 1));
-    }
+    // const u32 idx = addr / PAGE_SIZE;
+
+    // if(mem.page_table_read[idx])
+    // {
+    //     return handle_read_n64<access_type>(mem.page_table_read[idx],addr & (PAGE_SIZE - 1));
+    // }
 
     // if we are doing a slow access remap the addr manually
     addr = remap_addr<access_type,true>(n64,addr);

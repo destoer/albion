@@ -73,7 +73,6 @@ struct Breakpoint
 
 
 
-
 using Token = std::variant<u64, std::string>;
 
 // NOTE: order has to be the same as the variant decl
@@ -82,6 +81,21 @@ enum class token_type
     u64_t,
     str_t,
 };
+
+inline token_type read_type(const Token& token)
+{
+    return token_type(token.index());
+} 
+
+inline u64 read_token_u64(const Token& token)
+{
+    return std::get<u64>(token);
+}
+
+inline std::string read_token_str(const Token& token)
+{
+    return std::get<std::string>(token);
+}
 
 // basic tokenizer
 b32 tokenize(const std::string &line,std::vector<Token> &args);
@@ -139,6 +153,9 @@ public:
     void debug_input();
     b32 tokenize(const std::string &line,std::vector<Token> &tokens);
 
+    void log_debug(const std::vector<Token>& token);
+    void log_trace(const std::vector<Token>& token);
+    void log_info(const std::vector<Token>& token);
 
     void wake_up();
     void halt();

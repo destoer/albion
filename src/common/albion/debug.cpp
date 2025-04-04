@@ -1,21 +1,6 @@
 #include <albion/debug.h>
 
 
-token_type read_type(const Token& token)
-{
-    return token_type(token.index());
-} 
-
-u64 read_u64(const Token& token)
-{
-    return std::get<u64>(token);
-}
-
-std::string read_str(const Token& token)
-{
-    return std::get<std::string>(token);
-}
-
 // wake the instance up
 void Debug::wake_up()
 {
@@ -176,7 +161,7 @@ void Debug::print_mem(const std::vector<Token> &args)
 
     if(read_type(args[1]) == token_type::u64_t)
     {
-        addr = read_u64(args[1]);
+        addr = read_token_u64(args[1]);
     }
 
     else
@@ -196,7 +181,7 @@ void Debug::print_mem(const std::vector<Token> &args)
         int n;
         if(read_type(args[2]) == token_type::u64_t)
         {
-            n = read_u64(args[2]);
+            n = read_token_u64(args[2]);
         }
 
         else
@@ -344,7 +329,7 @@ void Debug::disass_internal(const std::vector<Token> &args)
 
     if(read_type(args[1]) == token_type::u64_t)
     {
-        addr = read_u64(args[1]);
+        addr = read_token_u64(args[1]);
     }
 
     else
@@ -364,7 +349,7 @@ void Debug::disass_internal(const std::vector<Token> &args)
         int n;
         if(read_type(args[2]) == token_type::u64_t)
         {
-            n = read_u64(args[2]);
+            n = read_token_u64(args[2]);
         }
 
         else
@@ -393,11 +378,11 @@ void Debug::set_break_internal(const std::vector<Token> &args, b32 watch)
 
     if(read_type(args[1]) != token_type::u64_t)
     {
-        print_console("expected int got string: {}\n",read_str(args[1]));
+        print_console("expected int got string: {}\n",read_token_str(args[1]));
         return;
     }
 
-    const auto addr = read_u64(args[1]);
+    const auto addr = read_token_u64(args[1]);
 
     b32 r = false;
     b32 w = false;
@@ -411,14 +396,14 @@ void Debug::set_break_internal(const std::vector<Token> &args, b32 watch)
     {
         if(read_type(args[2]) == token_type::u64_t)
         {
-            value = read_u64(args[2]);
+            value = read_token_u64(args[2]);
             value_enabled = true;
         }
 
         // type set
         else
         {
-            const auto literal = read_str(args[2]);
+            const auto literal = read_token_str(args[2]);
 
             for(const auto c: literal)
             {
@@ -442,13 +427,13 @@ void Debug::set_break_internal(const std::vector<Token> &args, b32 watch)
                 // last is value and previous was type set
                 if(read_type(args[3]) == token_type::u64_t)
                 {
-                    value = read_u64(args[3]);
+                    value = read_token_u64(args[3]);
                     value_enabled = true;
                 }
 
                 else
                 {
-                    print_console("expected int got string: {}\n",read_str(args[3]));
+                    print_console("expected int got string: {}\n",read_token_str(args[3]));
                     return;
                 }
             }
@@ -625,6 +610,25 @@ b32 decode_imm(const std::string &line, uint32_t &i,std::string &literal)
 
     return success;
 }
+
+void Debug::log_trace(const std::vector<Token>& token)
+{
+    UNUSED(token);
+    spdlog::set_level(spdlog::level::trace);
+}
+
+void Debug::log_debug(const std::vector<Token>& token) 
+{
+    UNUSED(token);
+    spdlog::set_level(spdlog::level::debug);
+}
+
+void Debug::log_info(const std::vector<Token>& token) 
+{
+    UNUSED(token);
+    spdlog::set_level(spdlog::level::info);
+}
+
 
 b32 Debug::tokenize(const std::string &line,std::vector<Token> &tokens)
 {

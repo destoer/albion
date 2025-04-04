@@ -113,6 +113,13 @@ void write_pc(N64 &n64, u64 pc)
     n64.cpu.pc_next = pc;
 }
 
+void write_call(N64 &n64, u64 pc)
+{
+    write_pc(n64,pc);
+    n64.debug.last_call = pc;
+}
+
+
 void skip_instr(Cpu &cpu)
 {
     cpu.pc = cpu.pc_next;

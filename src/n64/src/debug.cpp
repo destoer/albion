@@ -128,4 +128,25 @@ b32 N64Debug::read_var(const std::string &name, u64* out)
     return success;
 }
 
+void N64Debug::disass_func(const std::vector<Token> &args)
+{
+    u64 target = last_call;
+
+    if(args.size() >= 2 && read_type(args[1]) == token_type::u64_t)
+    {
+        target = read_token_u64(args[1]);
+    }
+
+    beyond_all_repair::Config config;
+    config.print_addr = true;
+    config.print_opcodes = true;
+
+    auto& func = beyond_all_repair::add_func_no_context(n64.program,target);
+    beyond_all_repair::disassemble_func(n64.program,func);
+    beyond_all_repair::print_console_func_mips(n64.program,func,config,n64.cpu.pc);
+
+    // Don't want this hanging around
+    beyond_all_repair::clear_references(n64.program);
+}
+
 }

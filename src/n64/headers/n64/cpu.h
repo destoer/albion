@@ -34,6 +34,7 @@ void reset_cpu(Cpu &cpu);
 
 void skip_instr(Cpu &cpu);
 void write_pc(N64 &n64, u64 pc);
+void write_call(N64& n64, u64 pc);
 
 void cycle_tick(N64 &n64, u32 cycles);
 

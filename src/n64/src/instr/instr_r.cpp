@@ -448,7 +448,7 @@ void instr_jalr(N64 &n64, const Opcode &opcode)
 
     n64.cpu.regs[opcode.rd] = n64.cpu.pc_next;
 
-    write_pc(n64,target);
+    write_call(n64,target);
 }
 
 void instr_sync(N64 &n64, const Opcode &opcode)

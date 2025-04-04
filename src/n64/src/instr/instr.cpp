@@ -158,7 +158,7 @@ void instr_jal(N64 &n64, const Opcode &opcode)
 
     n64.cpu.regs[beyond_all_repair::RA] = n64.cpu.pc_next;
 
-    write_pc(n64,target);
+    write_call(n64,target);
 }
 
 void instr_j(N64 &n64, const Opcode &opcode)

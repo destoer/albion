@@ -9,6 +9,8 @@ namespace nintendo64
 class N64Debug final : public Debug 
 {
 public:
+    u64 last_call = 0;
+
     N64Debug(N64 &n64);
 
 
@@ -17,6 +19,7 @@ public:
     void step(const std::vector<Token> &args);
     void disass(const std::vector<Token> &args);    
 
+    void disass_func(const std::vector<Token> &args);    
 
 
 
@@ -50,7 +53,11 @@ private:
         {"watch",&N64Debug::watch},
         {"watch_enable",&N64Debug::enable_watch},
         {"watch_disable",&N64Debug::disable_watch},
-        {"watch_list",&N64Debug::list_watchpoint}
+        {"watch_list",&N64Debug::list_watchpoint},
+        {"log_trace",&N64Debug::log_trace},
+        {"log_debug",&N64Debug::log_debug},
+        {"log_info",&N64Debug::log_info},
+        {"disass_func",&N64Debug::disass_func}
     };
 
     N64 &n64;
