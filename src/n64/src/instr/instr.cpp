@@ -165,15 +165,6 @@ void instr_j(N64 &n64, const Opcode &opcode)
 {
     const auto target = get_target(opcode.op,n64.cpu.pc);
 
-    // trivial waitloop
-    if(target == n64.cpu.pc - 4)
-    {
-        while(!n64.cpu.interrupt && !n64.rdp.frame_done)
-        {
-            n64.scheduler.skip_to_event();
-        }
-    }
-
     write_pc(n64,target);
 }
 

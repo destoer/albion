@@ -33,6 +33,7 @@ public:
     void execute_command(const std::vector<Token> &args) override;
     b32 read_var(const std::string &name, u64* out) override;
     void step_internal() override;
+    void on_break() override;
 
 private:
 

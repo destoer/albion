@@ -205,6 +205,8 @@ protected:
     // NOTE: this must have a $pc value to read for impl read_pc()
     virtual b32 read_var(const std::string& name, u64* value_out) = 0;
 
+    virtual void on_break() {}
+
     std::ofstream log_file;
     b32 log_full = false;
     // is debugged instance halted

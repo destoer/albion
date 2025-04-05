@@ -73,7 +73,8 @@ void instr_eret(N64& n64, const Opcode& opcode)
 
     if(status.erl)
     {
-        assert(false);
+        write_pc(n64,cop0.error_epc);
+        status.erl = false;
     }
 
     else

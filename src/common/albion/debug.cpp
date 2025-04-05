@@ -728,6 +728,8 @@ b32 Debug::invalid_command(const std::vector<Token>& args)
 void Debug::debug_input()
 {
     print_console("break at {:16x}\n",read_pc());
+    on_break();
+    
     std::string line = "";
 
 
