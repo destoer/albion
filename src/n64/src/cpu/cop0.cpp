@@ -624,8 +624,17 @@ u64 read_cop0(N64& n64, u32 reg)
     }
 }
 
-void Cop0::updateRandom() {
-    if (--random == 0) random = 31;
+void update_random(Cop0& cop0) 
+{
+    if(cop0.random == 0)
+    {
+        cop0.random = 31;
+    }
+
+    else
+    {
+        cop0.random -= 1;
+    }
 }
 
 }

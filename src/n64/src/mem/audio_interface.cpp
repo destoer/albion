@@ -5,8 +5,14 @@ void insert_audio_event(N64& n64)
 {
     auto& ai = n64.mem.ai;
 
+    const u64 samples = (ai.length * 8) / ai.bit_rate;
+    const u64 cycle_per_sample = (N64_CLOCK_CYCLES / ai.freq);
+    const u64 duration = cycle_per_sample * samples; 
+
+    // spdlog::debug("Duration {} {} {}",samples,cycle_per_sample,duration);
+
     // dont think this is the right value but roll with it for now
-    const auto event = n64.scheduler.create_event(ai.freq,n64_event::ai_dma);
+    const auto event = n64.scheduler.create_event(duration,n64_event::ai_dma);
     n64.scheduler.insert(event,false);    
 }
 
@@ -14,6 +20,8 @@ void do_ai_dma(N64& n64)
 {
     auto& ai = n64.mem.ai;
 
+    // interrupt as the transfer has started
+    set_mi_interrupt(n64,AI_INTR_BIT);
     ai.busy = true;
 
     // TODO: Actually do the transfer
@@ -27,10 +35,7 @@ void audio_event(N64& n64)
 
     // dma over
     ai.busy = false;
-
-    // interrupt as transfer is done
-    set_mi_interrupt(n64,AI_INTR_BIT);  
-
+  
     // handle pending transfer
     if(ai.full && ai.enabled)
     {
@@ -65,10 +70,9 @@ void write_ai(N64& n64, u64 addr ,u32 v)
 
         case AI_DACRATE:
         {
-            ai.dac_rate = (v & 0b1111'1111'1111'11);
+            ai.dac_rate = v & 0b0011'1111'1111'1111;
             ai.freq = VIDEO_CLOCK / (ai.dac_rate + 1);
-            ai.freq = 44100;
-            spdlog::trace("AI freq : {}, Dac rate {}\n",ai.freq,ai.dac_rate);
+            spdlog::trace("AI freq : {}, Dac rate {}",ai.freq,ai.dac_rate);
             break; 
         }
 
@@ -94,11 +98,6 @@ void write_ai(N64& n64, u64 addr ,u32 v)
                 // initial dma
                 if(!ai.busy)
                 {
-                    // interrupt for intial transfer
-                    set_mi_interrupt(n64,AI_INTR_BIT);
-
-                    ai.busy = true;
-
                     // we just have it do this instantly
                     do_ai_dma(n64);
                 }

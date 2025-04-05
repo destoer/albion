@@ -21,6 +21,6 @@ struct Rdp
 void reset_rdp(N64 &n64);
 void change_res(N64 &n64);
 
-static constexpr u32 VIDEO_CLOCK = 46 * 1024 * 1024;
+static constexpr u32 VIDEO_CLOCK = 48681812;
 
 }

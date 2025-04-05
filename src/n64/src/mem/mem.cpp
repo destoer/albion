@@ -262,6 +262,7 @@ void write_mem(N64 &n64, u32 addr, access_type v)
     }
 
     write_mem_internal<access_type>(n64,addr,v);
+    cycle_tick(n64,1);
 }
 
 template<const b32 debug,typename access_type>
@@ -319,6 +320,8 @@ access_type read_mem(N64 &n64, u32 addr)
             n64.debug.halt();
         }
     }
+
+    cycle_tick(n64,1);
 
     return v;
 }

@@ -133,8 +133,6 @@ struct Cop0
     XConfig xconfig;
 
     u32 load_linked = ~0u;
-
-    void updateRandom();
 };
 
 static constexpr u32 COUNT_BIT = 7;
