@@ -413,7 +413,7 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
 
         case beyond_all_repair::WIRED:
         {
-            cop0.wired = (v >> 5) & 0b11111;
+            cop0.wired = v & 0b111111;
             cop0.random = 31;
             spdlog::trace("COP0 Wired wire {}, random {}",cop0.wired,cop0.random);
             break;
@@ -656,14 +656,14 @@ u64 read_cop0(N64& n64, u32 reg)
 
 void update_random(Cop0& cop0) 
 {
-    if(cop0.random == 0)
+    if(cop0.random == cop0.wired)
     {
         cop0.random = 31;
     }
 
     else
     {
-        cop0.random -= 1;
+        cop0.random = (cop0.random - 1) & 63;
     }
 }
 
