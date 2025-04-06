@@ -11,13 +11,13 @@ void standard_exception(N64& n64, u32 code)
     auto& status = cop0.status;
     auto& cause = cop0.cause;
 
+    cause.exception_code = code;
+
+    const bool double_fault = status.exl;
+
     // EPC not saved for a double fault
-    if(!status.exl)
+    if(!double_fault)
     {
-        status.exl = true;
-        cause.exception_code = code;
-
-
         if(!in_delay_slot(n64.cpu))
         {
             cop0.epc = n64.cpu.pc_fetch;
@@ -30,6 +30,14 @@ void standard_exception(N64& n64, u32 code)
             cause.branch_delay = true;
         }
     }
+
+    else
+    {
+        spdlog::debug("Double fault: {:x}",cop0.epc);
+    }
+
+
+    status.exl = true;
 
     if(is_set(status.ds,6))
     {
@@ -47,8 +55,16 @@ void standard_exception(N64& n64, u32 code)
         case beyond_all_repair::TLBS:
         case beyond_all_repair::TLBM:
         {
-            // 0x80 in 64 bit
-            vector = 0x00;
+            // TODO: this is different in 64 bit
+            if(double_fault)
+            {
+                vector = 0x180;
+            }
+
+            else
+            {
+                vector = 0x00;
+            }
             break;
         }
 
