@@ -18,16 +18,15 @@ void standard_exception(N64& n64, u32 code)
         cause.exception_code = code;
 
 
-        // This assumes we have finished executing an instruction...
         if(!in_delay_slot(n64.cpu))
         {
-            cop0.epc = n64.cpu.pc;
+            cop0.epc = n64.cpu.pc_fetch;
             cause.branch_delay = false;
         }
 
         else
         {
-            cop0.epc = n64.cpu.pc - beyond_all_repair::MIPS_INSTR_SIZE;
+            cop0.epc = n64.cpu.pc_fetch - beyond_all_repair::MIPS_INSTR_SIZE;
             cause.branch_delay = true;
         }
 

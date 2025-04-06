@@ -278,6 +278,7 @@ void write_physical_debug(N64 &n64, u32 addr, access_type v)
     }
 
     write_physical<access_type>(n64,addr,v);
+    cycle_tick(n64,1);
 }
 
 
@@ -327,6 +328,26 @@ access_type read_mem(N64 &n64, u32 addr)
 }
 
 
+template<const b32 debug,typename access_type>
+access_type read_physical_debug(N64 &n64, u32 addr)
+{
+    const auto v = read_physical<access_type>(n64,addr);
+
+    if constexpr(debug)
+    {
+        if(n64.debug.breakpoint_hit(addr,v,break_type::read))
+        {
+            write_log(n64.debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
+            n64.debug.halt();
+        }
+    }
+
+    cycle_tick(n64,1);
+
+    return v;
+}
+
+
 template<const b32 debug>
 u8 read_u8(N64 &n64,u32 addr)
 {
@@ -343,6 +364,12 @@ template<const b32 debug>
 u32 read_u32(N64 &n64,u32 addr)
 {
     return read_mem<debug,u32>(n64,addr);
+}
+
+template<const b32 debug>
+u32 read_u32_physical(N64 &n64,u32 addr)
+{
+    return read_physical_debug<debug,u32>(n64,addr);
 }
 
 template<const b32 debug>

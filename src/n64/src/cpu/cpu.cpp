@@ -81,6 +81,8 @@ void step(N64 &n64)
         }
     }
 
+    n64.cpu.pc_fetch = n64.cpu.pc;
+
     const Opcode opcode = beyond_all_repair::make_opcode(op);
 
     //std::cout << fmt::format("{:16x}: {}\n",n64.cpu.pc,disass_n64(n64,op,n64.cpu.pc_next));
@@ -126,10 +128,9 @@ void skip_instr(Cpu &cpu)
     cpu.pc_next += beyond_all_repair::MIPS_INSTR_SIZE;
 }
 
-
-b32 in_delay_slot(Cpu& cpu)
+bool in_delay_slot(Cpu& cpu)
 {
-    return cpu.pc + beyond_all_repair::MIPS_INSTR_SIZE != cpu.pc_next;
+    return cpu.pc_fetch + beyond_all_repair::MIPS_INSTR_SIZE != cpu.pc;
 }
 
 }

@@ -233,8 +233,19 @@ void instr_lw(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s32>(read_u32<debug>(n64,n64.cpu.regs[base] + imm));
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,false);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s32>(read_u32_physical<debug>(n64,phys_addr));
 }
 
 template<const b32 debug>
