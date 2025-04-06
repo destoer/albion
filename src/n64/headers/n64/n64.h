@@ -25,6 +25,9 @@ struct N64
     bool size_change = false;
     b32 debug_enabled = false;
     AudioBuffer audio_buffer;
+
+    // Has count event been serviced by cancelling
+    bool count_cancel = false;
 };
 
 static constexpr u32 N64_CLOCK_CYCLES = 93 * 1024 * 1024;

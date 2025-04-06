@@ -38,9 +38,12 @@ void Playback::stop() noexcept
 
 Playback::~Playback()
 {
-    stop();
-    SDL_DestroyAudioStream(stream);
-    stream = nullptr;
+    if(stream)
+    {
+        // This causes crashes during an assert (i have no idea why).
+        // SDL_DestroyAudioStream(stream);
+        stream = nullptr;
+    }
 }
 
 void push_samples(Playback* playback,AudioBuffer& audio_buffer)

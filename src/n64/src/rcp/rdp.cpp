@@ -60,7 +60,7 @@ void increment_line(N64 &n64)
     auto& vi = n64.mem.vi;
     n64.rdp.ly++;
 
-    if((n64.rdp.ly << 1) == vi.intr)
+    if((vi.serrate && (n64.rdp.ly >> 1) == (vi.intr >> 1)) || n64.rdp.ly == vi.intr)
     {
         set_mi_interrupt(n64,VI_INTR_BIT);
     }

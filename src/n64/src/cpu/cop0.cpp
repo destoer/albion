@@ -131,8 +131,8 @@ void insert_count_event(N64 &n64)
 
     auto& cop0 = n64.cpu.cop0;
 
-    const u32 count = cop0.count;
-    const u32 compare = cop0.compare;
+    const u64 count = cop0.count;
+    const u64 compare = cop0.compare;
 
     
     if(count < compare)
@@ -142,7 +142,7 @@ void insert_count_event(N64 &n64)
 
     else
     {
-        cycles = (u32(0xffffffff) - (compare - count)); 
+        cycles = (u32(0xffff'ffff) - count) + compare; 
     }
 
     const auto event = n64.scheduler.create_event(cycles * 2,n64_event::count);
@@ -170,28 +170,21 @@ void count_intr(N64 &n64)
     set_intr_cop0(n64,COUNT_BIT);
 }
 
-void check_count_intr(N64& n64)
-{
-    auto& cop0 = n64.cpu.cop0;
-
-    //printf("cmp : %x : %x\n",cop0.count,cop0.compare);
-
-    // account for our shoddy timing..
-    if(beyond_all_repair::abs(cop0.count - cop0.compare) <= 20)
-    {
-        cop0.count = cop0.compare;
-        count_intr(n64);        
-    }
-}
-
 void count_event(N64& n64, u32 cycles)
 {
     auto& cop0 = n64.cpu.cop0;
     cop0.count += cycles >> 1;
 
-    check_count_intr(n64);
+    // Not due to an event cancelation it should have tripped
+    // Due to deffered checking it may have overrun a couple of cycles
+    if(!n64.count_cancel)
+    {
+        spdlog::debug("Count {:x} == {:x}",cop0.count,cop0.compare);
+        count_intr(n64);  
+        insert_count_event(n64); 
+    }
 
-    insert_count_event(n64);
+    n64.count_cancel = false;
 }
 
 void mi_intr(N64& n64)
@@ -230,28 +223,28 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
         // cycle counter (incremented every other cycle)
         case beyond_all_repair::COUNT:
         {
-            //puts("wrote count");
-
+            n64.count_cancel = true;
             n64.scheduler.remove(n64_event::count,false);
             cop0.count = v;
 
-            spdlog::trace("COP0 count", cop0.count);
+            spdlog::trace("COP0 count {:x}", cop0.count);
             insert_count_event(n64);
+            n64.count_cancel = false;
             break;
         }
 
         // when this is == count trigger in interrupt
         case beyond_all_repair::COMPARE:
         {
-            //printf("write cmp %x : %x\n",cop0.compare,u32(v));
-
+            n64.count_cancel = true;
             n64.scheduler.remove(n64_event::count);
+            
             cop0.compare = v;
             insert_count_event(n64);
 
             // ip7 in cause is reset when this is written
             deset_intr_cop0(n64,COUNT_BIT);
-            spdlog::trace("COP0 compare",cop0.compare);
+            spdlog::trace("COP0 compare {:x}",cop0.compare);
             break;
         }
         
@@ -549,15 +542,10 @@ u64 read_cop0(N64& n64, u32 reg)
 
         case COUNT:
         {
+            n64.count_cancel = true;
             // read out count tick off all the cycles
             n64.scheduler.remove(n64_event::count);
             insert_count_event(n64);
-
-            // fudge counter if there is a pending interrupt to prevent bad scheduling
-            if(cop0.count == cop0.compare && is_set(cop0.cause.pending,COUNT_BIT))
-            {
-                return cop0.count - 1;
-            }
 
             return cop0.count;
         }
