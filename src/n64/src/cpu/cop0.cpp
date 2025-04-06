@@ -227,9 +227,9 @@ void mi_intr(N64& n64)
     set_intr_cop0(n64,MI_BIT);
 }
 
-void write_entry_lo(EntryLo& entry_lo, u32 v)
+void write_entry_lo(EntryLo& entry_lo, u64 v)
 {
-    entry_lo.pfn = (v >> 6) & 0x000f'ffff;
+    entry_lo.pfn = (v >> 6) & 0x3'ffff;
     entry_lo.c = (v >> 3) & 0b11;
     entry_lo.d = is_set(v,2);
     entry_lo.v = is_set(v,1);
@@ -241,7 +241,7 @@ void log_entry_lo(const std::string& TAG,EntryLo& entry_lo)
     spdlog::trace("{} pfn 0x{:x}, c {}, d {}, v {}, g {}",TAG,entry_lo.pfn,entry_lo.c,entry_lo.d,entry_lo.v,entry_lo.g);
 }
 
-u32 read_entry_lo(EntryLo& entry_lo)
+u64 read_entry_lo(EntryLo& entry_lo)
 {
     return (entry_lo.g << 0) | (entry_lo.v << 1) | (entry_lo.d << 2) | 
         (entry_lo.c << 3) | (entry_lo.pfn << 6); 
@@ -554,7 +554,7 @@ u64 read_cop0(N64& n64, u32 reg)
         case ENTRY_HI:
         {
             auto& entry_hi = cop0.entry_hi;
-            return (entry_hi.asid << 0) | (entry_hi.vpn2 << 13);
+            return (entry_hi.asid << 0) | (u64(entry_hi.vpn2) << 13) | (u64(entry_hi.region) << 62);
         }
 
         case ENTRY_LO_ZERO:

@@ -52,8 +52,8 @@ struct EntryLo
 
 struct Index
 {
-    b32 p;
-    u32 idx;
+    b32 p = 0;
+    u32 idx = 0;
 };
 
 struct Context
