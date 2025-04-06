@@ -222,7 +222,7 @@ u32 read_entry_lo(EntryLo& entry_lo)
 }
 
 
-void write_cop0(N64 &n64, u64 v, u32 reg)
+void write_cop0(N64 &n64, u64 v, u64 reg)
 {
     auto &cpu = n64.cpu;
     auto &cop0 = cpu.cop0;
@@ -257,6 +257,13 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
             break;
         }
         
+        case beyond_all_repair::CONTEXT:
+        {
+            cop0.context.bad_vpn2 = (v >> 4) & 0x7ffff;
+            cop0.context.pte_base = (v >> 23);
+            break;
+        }
+
         case beyond_all_repair::TAGLO:
         {
             cop0.tagLo = v;
@@ -456,7 +463,7 @@ void write_cop0(N64 &n64, u64 v, u32 reg)
 
         default:
         {
-            printf("unimplemented cop0 write: %s(%d)\n",beyond_all_repair::COP0_NAMES[reg],reg);
+            printf("unimplemented cop0 write: %s(%zd)\n",beyond_all_repair::COP0_NAMES[reg],reg);
             exit(1);
         }
     }
