@@ -396,10 +396,10 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
 
         case beyond_all_repair::CONFIG:
         {
-            cop0.config.transfer_mode = (v >> 24 & 0b111);
+            cop0.config.transfer_mode = (v >> 24) & 0b111;
             cop0.config.endianness = is_set(v, 14);
-            cop0.config.cu = is_set(v, 2);
-            cop0.config.k0 = v & 0b11;
+            cop0.config.cu = is_set(v, 3);
+            cop0.config.k0 = v & 0b111;
             spdlog::trace("COP0 Config transfer mode {}, endianess {}, cu {}, k0 {}",cop0.config.transfer_mode,cop0.config.endianness,cop0.config.cu,cop0.config.k0);
             break;
         }
@@ -606,7 +606,7 @@ u64 read_cop0(N64& n64, u32 reg)
         case CONFIG:
         {
             auto& config = cop0.config;
-            return config.freq << 28 | config.transfer_mode << 24 | 0b1101 << 15 | config.endianness << 14 | 0b11001000110 << 4 | config.cu << 2 | config.k0;
+            return config.freq << 28 | config.transfer_mode << 24 | 0b1101 << 15 | config.endianness << 14 | 0b11001000110 << 4 | config.cu << 3 | config.k0;
         }
 
         case PRID:
