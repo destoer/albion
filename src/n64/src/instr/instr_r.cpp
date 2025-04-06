@@ -299,7 +299,7 @@ void instr_div(N64 &n64, const Opcode &opcode)
 
         else
         {
-            n64.cpu.lo = 0xffff'ffff;
+            n64.cpu.lo = 0xffff'ffff'ffff'ffff;
         }
         n64.cpu.hi = n64.cpu.regs[opcode.rs];
         return;
@@ -321,7 +321,7 @@ void instr_divu(N64 &n64, const Opcode &opcode)
     // div by zero not allowed
     if(n64.cpu.regs[opcode.rt] == 0)
     {
-        n64.cpu.lo = 0xffff'ffff;
+        n64.cpu.lo = 0xffff'ffff'ffff'ffff;
         n64.cpu.hi = n64.cpu.regs[opcode.rs];
         return;
     }

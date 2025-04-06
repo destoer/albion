@@ -9,7 +9,7 @@ void insert_audio_event(N64& n64)
     const u64 cycle_per_sample = (N64_CLOCK_CYCLES / ai.freq);
     const u64 duration = cycle_per_sample * samples; 
 
-    // spdlog::debug("Duration {} {} {}",samples,cycle_per_sample,duration);
+    // spdlog::debug("Duration {} {} {} {}",ai.length,samples,cycle_per_sample,duration);
 
     // dont think this is the right value but roll with it for now
     const auto event = n64.scheduler.create_event(duration,n64_event::ai_dma);
