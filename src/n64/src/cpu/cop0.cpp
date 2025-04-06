@@ -227,10 +227,16 @@ void mi_intr(N64& n64)
     set_intr_cop0(n64,MI_BIT);
 }
 
+u64 read_entry_lo(EntryLo& entry_lo)
+{
+    return (entry_lo.g << 0) | (entry_lo.v << 1) | (entry_lo.d << 2) | 
+        (entry_lo.c << 3) | (entry_lo.pfn << 6); 
+}
+
 void write_entry_lo(EntryLo& entry_lo, u64 v)
 {
-    entry_lo.pfn = (v >> 6) & 0x3'ffff;
-    entry_lo.c = (v >> 3) & 0b11;
+    entry_lo.pfn = (v >> 6) & 0xff'ff'ff;
+    entry_lo.c = (v >> 3) & 0x7;
     entry_lo.d = is_set(v,2);
     entry_lo.v = is_set(v,1);
     entry_lo.g = is_set(v,0);
@@ -241,11 +247,6 @@ void log_entry_lo(const std::string& TAG,EntryLo& entry_lo)
     spdlog::trace("{} pfn 0x{:x}, c {}, d {}, v {}, g {}",TAG,entry_lo.pfn,entry_lo.c,entry_lo.d,entry_lo.v,entry_lo.g);
 }
 
-u64 read_entry_lo(EntryLo& entry_lo)
-{
-    return (entry_lo.g << 0) | (entry_lo.v << 1) | (entry_lo.d << 2) | 
-        (entry_lo.c << 3) | (entry_lo.pfn << 6); 
-}
 
 
 void write_cop0(N64 &n64, u64 v, u64 reg)

@@ -45,9 +45,9 @@ struct EntryLo
 {
     u32 pfn = 0;
     u32 c = 0;
-    b32 d = 0;
-    b32 v = 0;
-    b32 g = 0;
+    u32 d = 0;
+    u32 v = 0;
+    u32 g = 0;
 };
 
 struct Index
