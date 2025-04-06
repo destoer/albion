@@ -7,11 +7,11 @@ namespace nintendo64
 // see page 151 psuedo code of manual
 void standard_exception(N64& n64, u32 code)
 {
-    // TODO: i think we need to run tests for this LOL
     auto& cop0 = n64.cpu.cop0;
     auto& status = cop0.status;
     auto& cause = cop0.cause;
 
+    // EPC not saved for a double fault
     if(!status.exl)
     {
         status.exl = true;
@@ -29,42 +29,36 @@ void standard_exception(N64& n64, u32 code)
             cop0.epc = n64.cpu.pc_fetch - beyond_all_repair::MIPS_INSTR_SIZE;
             cause.branch_delay = true;
         }
-
-        if(is_set(status.ds,6))
-        {
-            printf("Warning bev set in interrupt\n");
-        }
-
-        // bev goes to uncached
-        const u64 base = is_set(status.ds,6)? 0xFFFF'FFFF'BFC0'0200 : 0xFFFF'FFFF'8000'0000;
-
-        u32 vector = 0;
-
-        switch(code)
-        {
-            case beyond_all_repair::TLBL:
-            case beyond_all_repair::TLBS:
-            case beyond_all_repair::TLBM:
-            {
-                // 0x80 in 64 bit
-                vector = 0x00;
-                break;
-            }
-
-            default: vector = 0x180; break;
-        }
-
-        const u64 target = base + vector; 
-
-        write_pc(n64,target);
-        skip_instr(n64.cpu);   
     }
 
-    // double fault (this should not be technically possible)
-    else
+    if(is_set(status.ds,6))
     {
-        assert(false);
+        printf("Warning bev set in interrupt\n");
+    } 
+
+    // bev goes to uncached
+    const u64 base = is_set(status.ds,6)? 0xFFFF'FFFF'BFC0'0200 : 0xFFFF'FFFF'8000'0000;
+
+    u32 vector = 0;
+
+    switch(code)
+    {
+        case beyond_all_repair::TLBL:
+        case beyond_all_repair::TLBS:
+        case beyond_all_repair::TLBM:
+        {
+            // 0x80 in 64 bit
+            vector = 0x00;
+            break;
+        }
+
+        default: vector = 0x180; break;
     }
+
+    const u64 target = base + vector; 
+
+    write_pc(n64,target);
+    skip_instr(n64.cpu); 
 }
 
 void coprocesor_unusable(N64& n64, u32 number)
