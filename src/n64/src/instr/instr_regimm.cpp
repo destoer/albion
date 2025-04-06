@@ -96,8 +96,7 @@ void instr_bltzall(N64 &n64, const Opcode &opcode)
 
 void raise_trap(N64& n64)
 {
-    UNUSED(n64);
-    unimplemented("raise trap");
+    standard_exception(n64,beyond_all_repair::TRAP);
 }
 
 void trap_cmp(N64& n64, b32 cmp_res)
