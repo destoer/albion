@@ -235,7 +235,7 @@ void instr_lw(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
-    const auto phys_addr_opt = translate_vaddr(n64,vaddr,false);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
 
     // invalid vaddr exception raised
     if(!phys_addr_opt) 
@@ -335,7 +335,7 @@ void instr_sw(N64 &n64, const Opcode &opcode)
 
     const u64 vaddr = n64.cpu.regs[base] + imm;
     
-    const auto phys_addr_opt = translate_vaddr(n64,vaddr,true);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
 
     // invalid vaddr exception raised
     if(!phys_addr_opt) 

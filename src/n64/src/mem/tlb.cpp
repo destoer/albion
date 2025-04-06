@@ -5,7 +5,13 @@ namespace nintendo64
 
 void bad_vaddr_exception(N64& n64, u64 address, u32 code);
 
-std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
+enum class tlb_access
+{
+    write,
+    read,
+};
+
+std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
     const u16 tlb_set = 0b11'11'00'00'11111111;
     const u32 idx = (addr & 0xf000'0000) >> 28;
 
@@ -43,7 +49,7 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
             if((entry.entry_hi.vpn2 & vpn2_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry_lo.g)) 
             {   
                 // Attempt to write to a read only entry!
-                if(!entry_lo.d && write)
+                if(!entry_lo.d && access == tlb_access::write)
                 {
                     context.bad_vpn2 = (addr >> 13) & 0x7ffff;
                     bad_vaddr_exception(n64,addr,beyond_all_repair::TLBM);
@@ -57,19 +63,22 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, bool write) {
 
         // TLB miss
 
-        if(write) 
+        switch(access)
         {
-            context.bad_vpn2 = (addr >> 13) & 0x7ffff;
-            bad_vaddr_exception(n64,addr,beyond_all_repair::TLBS);
+            case tlb_access::read:
+            {
+                context.bad_vpn2 = (addr >> 13) & 0x7ffff;
+                bad_vaddr_exception(n64,addr,beyond_all_repair::TLBL);
+                break;
+            }
+
+            case tlb_access::write:
+            {
+                context.bad_vpn2 = (addr >> 13) & 0x7ffff;
+                bad_vaddr_exception(n64,addr,beyond_all_repair::TLBS);
+                break;
+            }
         }
-
-        else 
-        {
-            context.bad_vpn2 = (addr >> 13) & 0x7ffff;
-            bad_vaddr_exception(n64,addr,beyond_all_repair::TLBL);
-        }
-
-
 
         // No match found
         return std::nullopt;
