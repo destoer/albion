@@ -67,7 +67,7 @@ void cycle_tick(N64 &n64, u32 cycles)
 
 template<const b32 debug>
 void step(N64 &n64)
-{
+{    
     const u32 op = read_u32<debug>(n64,n64.cpu.pc);
 
     if constexpr(debug)
@@ -82,6 +82,12 @@ void step(N64 &n64)
     }
 
     n64.cpu.pc_fetch = n64.cpu.pc;
+
+    if((n64.cpu.pc & 3) != 0)
+    {
+        address_error_exception(n64,n64.cpu.pc,address_error::load);
+        return;
+    }
 
     const Opcode opcode = beyond_all_repair::make_opcode(op);
 
@@ -107,7 +113,7 @@ void write_pc(N64 &n64, u64 pc)
 {
     if((pc & 0b11) != 0)
     {
-        unimplemented("pc address exception");
+        spdlog::warn("PC address invalid {:x}",pc);
     }
 
     n64.debug.trace.add(n64.cpu.pc,pc);	

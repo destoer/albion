@@ -92,6 +92,32 @@ void bad_vaddr_exception(N64& n64, u64 address, u32 code)
     standard_exception(n64,code);
 }
 
+enum class address_error
+{
+    load,
+    store,
+};
+
+void address_error_exception(N64& n64, u64 addr, address_error error)
+{
+    n64.cpu.cop0.bad_vaddr = addr;
+
+    switch(error)
+    {
+        case address_error::load:
+        {
+            standard_exception(n64,beyond_all_repair::ADDRESS_LOAD_ERROR);
+            break;
+        }
+
+        case address_error::store:
+        {
+            standard_exception(n64,beyond_all_repair::ADDRESS_STORE_ERROR);
+            break;
+        }
+    }
+}
+
 void check_interrupts(N64 &n64)
 {
     auto& cop0 = n64.cpu.cop0;

@@ -235,6 +235,12 @@ void instr_lw(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
+    if((vaddr & 3) != 0)
+    {
+        address_error_exception(n64,vaddr,address_error::load);
+        return;
+    }
+
     const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
 
     // invalid vaddr exception raised
@@ -253,8 +259,15 @@ void instr_ld(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    n64.cpu.regs[opcode.rt] = read_u64<debug>(n64,n64.cpu.regs[base] + imm);
+    if((vaddr & 7) != 0)
+    {
+        address_error_exception(n64,vaddr,address_error::load);
+        return;
+    }
+
+    n64.cpu.regs[opcode.rt] = read_u64<debug>(n64,vaddr);
 }
 
 template<const b32 debug>
@@ -335,6 +348,12 @@ void instr_sw(N64 &n64, const Opcode &opcode)
 
     const u64 vaddr = n64.cpu.regs[base] + imm;
     
+    if((vaddr & 3) != 0)
+    {
+        address_error_exception(n64,vaddr,address_error::store);
+        return;
+    }
+
     const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
 
     // invalid vaddr exception raised
@@ -393,8 +412,15 @@ void instr_sh(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    write_u16<debug>(n64,n64.cpu.regs[base] + imm,n64.cpu.regs[opcode.rt]);
+    if((vaddr & 1) != 0)
+    {
+        address_error_exception(n64,vaddr,address_error::store);
+        return;
+    }
+
+    write_u16<debug>(n64,vaddr,n64.cpu.regs[opcode.rt]);
 }
 
 template<const b32 debug>
@@ -402,8 +428,15 @@ void instr_sd(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    write_u64<debug>(n64,n64.cpu.regs[base] + imm,n64.cpu.regs[opcode.rt]);
+    if((vaddr & 7) != 0)
+    {
+        address_error_exception(n64,vaddr,address_error::store);
+        return;
+    }
+
+    write_u64<debug>(n64,vaddr,n64.cpu.regs[opcode.rt]);
 }
 
 template<const b32 debug>
@@ -529,8 +562,15 @@ void instr_lh(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s16>(read_u16<debug>(n64,n64.cpu.regs[base] + imm));
+    if((vaddr & 1) != 0)
+    {
+        address_error_exception(n64,vaddr,address_error::load);
+        return;
+    }
+
+    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s16>(read_u16<debug>(n64,vaddr));
 }
 
 
