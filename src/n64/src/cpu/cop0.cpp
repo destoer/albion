@@ -235,6 +235,7 @@ u64 read_entry_lo(EntryLo& entry_lo)
 
 void write_entry_lo(EntryLo& entry_lo, u64 v)
 {
+    // Apparently this is actually 24 bits?
     entry_lo.pfn = (v >> 6) & 0xff'ff'ff;
     entry_lo.c = (v >> 3) & 0x7;
     entry_lo.d = is_set(v,2);

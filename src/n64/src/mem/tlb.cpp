@@ -98,7 +98,20 @@ void write_tlb(N64& n64, u32 idx)
     auto& cop0 = n64.cpu.cop0;
     auto& tlb = n64.mem.tlb;
     
-    tlb.entry[idx].page_mask = cop0.page_mask;
+    u32 page_mask_written = cop0.page_mask;
+    u32 effective_mask = 0;
+
+    // page mask is set to 0b11 for each pair if the high bit is set
+    for(u32 i = 0; i < 12; i += 2)
+    {
+        const u32 mask = (0b10 << i);
+        if((page_mask_written & mask) == mask)
+        {
+            effective_mask |= (0b11 << i);
+        }
+    }
+
+    tlb.entry[idx].page_mask = effective_mask;
     tlb.entry[idx].entry_hi = cop0.entry_hi;
     tlb.entry[idx].entry_hi.vpn2 = tlb.entry[idx].entry_hi.vpn2;
     
