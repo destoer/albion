@@ -113,8 +113,7 @@ void write_tlb(N64& n64, u32 idx)
 
     tlb.entry[idx].page_mask = effective_mask;
     tlb.entry[idx].entry_hi = cop0.entry_hi;
-    //tlb.entry[idx].entry_hi.vpn2 = tlb.entry[idx].entry_hi.vpn2;
-    
+
     cop0.entry_lo_zero.pfn &= 0xfffff;
     cop0.entry_lo_one.pfn &= 0xfffff;
 
@@ -171,6 +170,9 @@ void instr_tlbr(N64& n64, const Opcode &opcode)
 
     cop0.page_mask = entry.page_mask;
     cop0.entry_hi = entry.entry_hi;
+
+    cop0.entry_hi.vpn2 &= ~entry.page_mask;
+
     cop0.entry_lo_zero = entry.entry_lo_zero;
     cop0.entry_lo_one = entry.entry_lo_one;
 }
