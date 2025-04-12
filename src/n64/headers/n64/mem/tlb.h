@@ -8,6 +8,7 @@ static constexpr u32 TLB_SIZE = 64;
 struct TLBEntry
 {
     u32 page_mask = 0;
+    u32 odd_page_bit = 12;
     EntryHi entry_hi;
     EntryLo entry_lo_one;
     EntryLo entry_lo_zero;

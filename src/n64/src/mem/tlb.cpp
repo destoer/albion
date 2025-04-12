@@ -15,82 +15,93 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
     const u16 tlb_set = 0b11'11'00'00'11111111;
     const u32 idx = (addr & 0xf000'0000) >> 28;
 
-    // TLB mapped
-    if(is_set(tlb_set,idx))
+    if(!is_set(tlb_set,idx))
     {
-        auto& cop0 = n64.cpu.cop0;
-        auto& tlb = n64.mem.tlb;
-
-        // assume a 32 bit address, change this in 64 bit mode?
-        addr &= 0xffff'ffff;
-
-        // For 32 bit mode, 64 bit is just full at 27 bits
-        const u64 vpn2_mode_mask = 0x7ffff;
-
-        // context used in 32 bit, otherwhise xcontext
-        auto& context = n64.cpu.cop0.context;
-
-        // Scan for a match in the tlb
-        for(u32 e = 0; e < TLB_SIZE; e++) 
-        {
-            auto& entry = tlb.entry[e];
-
-            const u64 vpn2_mask = vpn2_mode_mask & ~entry.page_mask;
-
-            auto& entry_lo = is_set(addr,13)? entry.entry_lo_one : entry.entry_lo_zero;
-            const auto vpn2 = ((addr >> 13) & vpn2_mask);
-            
-            // If the entry is not valid throw an exception
-            if(!entry_lo.v) 
-            {
-                break;
-            }
-
-            if((entry.entry_hi.vpn2 & vpn2_mask) == vpn2 && (cop0.entry_hi.asid == entry.entry_hi.asid || entry_lo.g)) 
-            {   
-                // Attempt to write to a read only entry!
-                if(!entry_lo.d && access == tlb_access::write)
-                {
-                    context.bad_vpn2 = (addr >> 13) & 0x7ffff;
-                    bad_vaddr_exception(n64,addr,beyond_all_repair::TLBM);
-                    return std::nullopt;
-                }
-
-                const auto page_offset = addr & ((entry.page_mask << 13) | 0xfff);
-                return (entry_lo.pfn << 13) | page_offset;
-            }
-        }
-
-        // TLB miss
-
-        switch(access)
-        {
-            case tlb_access::read:
-            {
-                context.bad_vpn2 = (addr >> 13) & 0x7ffff;
-                bad_vaddr_exception(n64,addr,beyond_all_repair::TLBL);
-                break;
-            }
-
-            case tlb_access::write:
-            {
-                context.bad_vpn2 = (addr >> 13) & 0x7ffff;
-                bad_vaddr_exception(n64,addr,beyond_all_repair::TLBS);
-                break;
-            }
-        }
-
-        // No match found
-        return std::nullopt;
-    }
-
-    // Direct mapped just pass the addr straight through
-    else
-    {
+        // Direct mapped just pass the addr straight through
         // NOTE: this only works because both direct mapped sections 
         // are the same size...
         return addr & 0x1FFF'FFFF;
     }
+
+    // TLB mapped
+    auto& cop0 = n64.cpu.cop0;
+    auto& tlb = n64.mem.tlb;
+
+    // assume a 32 bit address, change this in 64 bit mode?
+    addr &= 0xffff'ffff;
+
+    // For 32 bit mode, 64 bit is just full at 27 bits
+    const u64 vpn2_mode_mask = 0x7ffff;
+
+    // context used in 32 bit, otherwhise xcontext
+    auto& context = n64.cpu.cop0.context;
+
+    const u32 vpn2 = (addr >> 13) & vpn2_mode_mask;
+
+    // Scan for a match in the tlb
+    for(u32 e = 0; e < TLB_SIZE; e++) 
+    {
+        auto& entry = tlb.entry[e];
+
+        const bool odd_page = is_set(addr,entry.odd_page_bit);
+        auto& entry_lo = odd_page? entry.entry_lo_one : entry.entry_lo_zero;
+
+        const u64 vpn2_mask = ~entry.page_mask;
+
+        const bool match_asid = (cop0.entry_hi.asid == entry.entry_hi.asid) || entry_lo.g;
+        const bool match_vpn = (vpn2 & vpn2_mask) == (entry.entry_hi.vpn2 & vpn2_mask);
+
+        if(match_vpn && match_asid)
+        {   
+            // If the entry is not valid we have a problem!
+            if(!entry_lo.v) 
+            {
+                spdlog::debug("Hit invalid TLB entry for addr {:x} vpn2 {:x}, asid {:x}, g {}, odd page {}({})",addr,vpn2,cop0.entry_hi.asid,entry_lo.g,odd_page,entry.odd_page_bit);
+                break;
+            }
+
+            // Attempt to write to a read only entry!
+            if(!entry_lo.d && access == tlb_access::write)
+            {
+                context.bad_vpn2 = vpn2;
+                bad_vaddr_exception(n64,addr,beyond_all_repair::TLBM);
+                return std::nullopt;
+            }
+
+            const u32 page_mask = entry.page_mask << 12;
+            const u32 page_offset = addr & (page_mask | 0xfff);
+            const u32 translated_addr = ((entry_lo.pfn << 12) & ~page_mask) | page_offset;
+            spdlog::debug("Translated addr to {:x} from {:x} ({:x})",translated_addr,addr,page_mask);
+            return translated_addr;
+        }
+    }
+
+    // TLB miss
+
+    switch(access)
+    {
+        case tlb_access::read:
+        {
+            context.bad_vpn2 =  vpn2;
+            bad_vaddr_exception(n64,addr,beyond_all_repair::TLBL);
+            break;
+        }
+
+        case tlb_access::write:
+        {
+            context.bad_vpn2 = vpn2;
+            bad_vaddr_exception(n64,addr,beyond_all_repair::TLBS);
+            break;
+        }
+    }
+
+    // No match found
+    return std::nullopt;
+}
+
+u32 last_set_bit(u32 v)
+{
+    return v ^ (v & (v - 1));
 }
 
 void write_tlb(N64& n64, u32 idx) 
@@ -112,6 +123,10 @@ void write_tlb(N64& n64, u32 idx)
     }
 
     tlb.entry[idx].page_mask = effective_mask;
+
+    const u32 last_set = last_set_bit(tlb.entry[idx].page_mask);
+    tlb.entry[idx].odd_page_bit = last_set != 0? (last_set + 13) : 12;
+
     tlb.entry[idx].entry_hi = cop0.entry_hi;
 
     cop0.entry_lo_zero.pfn &= 0xfffff;
