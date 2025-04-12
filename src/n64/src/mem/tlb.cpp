@@ -15,10 +15,13 @@ void set_tlb_exception_regs(N64& n64, u32 full_vpn, u32 region)
 {
     auto& context = n64.cpu.cop0.context;
     auto& xcontext = n64.cpu.cop0.xcontext;
+    auto& entry_hi = n64.cpu.cop0.entry_hi;
 
     context.bad_vpn2 = full_vpn & 0x0007'ffff;
     xcontext.bad_vpn2 = full_vpn;
     xcontext.region = region;
+    entry_hi.vpn2 = full_vpn;
+
 }
 
 std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
