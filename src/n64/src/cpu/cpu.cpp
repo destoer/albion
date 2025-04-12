@@ -68,7 +68,25 @@ void cycle_tick(N64 &n64, u32 cycles)
 template<const b32 debug>
 void step(N64 &n64)
 {    
-    const u32 op = read_u32<debug>(n64,n64.cpu.pc);
+    n64.cpu.pc_fetch = n64.cpu.pc;
+
+    if((n64.cpu.pc & 3) != 0)
+    {
+        address_error_exception(n64,n64.cpu.pc_fetch,address_error::load);
+        return;
+    }
+
+    const auto pc_phys_addr_opt = translate_vaddr(n64,n64.cpu.pc_fetch,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!pc_phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto pc_phys_addr = *pc_phys_addr_opt;
+    
+    const u32 op = read_u32_physical<debug>(n64,pc_phys_addr);
 
     if constexpr(debug)
     {
@@ -81,20 +99,12 @@ void step(N64 &n64)
         }
     }
 
-    n64.cpu.pc_fetch = n64.cpu.pc;
-
-    if((n64.cpu.pc & 3) != 0)
-    {
-        address_error_exception(n64,n64.cpu.pc,address_error::load);
-        return;
-    }
+    skip_instr(n64.cpu);
 
     const Opcode opcode = beyond_all_repair::make_opcode(op);
 
     //std::cout << fmt::format("{:16x}: {}\n",n64.cpu.pc,disass_n64(n64,op,n64.cpu.pc_next));
     
-    skip_instr(n64.cpu);
-
     // call the instr handler
     //const u32 offset = beyond_all_repair::get_opcode_type(opcode.op);
     const u32 offset = beyond_all_repair::calc_base_table_offset(opcode);

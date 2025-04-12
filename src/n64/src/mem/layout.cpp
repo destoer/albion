@@ -6,6 +6,8 @@ namespace nintendo64
 template<typename access_type>
 access_type read_physical(N64 &n64, u32 addr)
 {
+    addr &= ~(sizeof(access_type) - 1);
+
     // just do something naive for now so we can get roms running
     if(addr < 0x00800000)
     {
@@ -112,6 +114,8 @@ access_type read_physical(N64 &n64, u32 addr)
 template<typename access_type>
 void write_physical(N64 &n64, u32 addr, access_type v)
 {
+    addr &= ~(sizeof(access_type) - 1);
+
     // just do something naive for now so we can get roms running
     if(addr < 0x0080'0000)
     {

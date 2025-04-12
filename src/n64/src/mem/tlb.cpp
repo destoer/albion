@@ -108,11 +108,6 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
     return std::nullopt;
 }
 
-u32 last_set_bit(u32 v)
-{
-    return v ^ (v & (v - 1));
-}
-
 void write_tlb(N64& n64, u32 idx) 
 {
     auto& cop0 = n64.cpu.cop0;
@@ -133,8 +128,8 @@ void write_tlb(N64& n64, u32 idx)
 
     tlb.entry[idx].page_mask = effective_mask;
 
-    const u32 last_set = last_set_bit(tlb.entry[idx].page_mask);
-    tlb.entry[idx].odd_page_bit = last_set != 0? (last_set + 13) : 12;
+    const u32 last_set = destoer::fls(tlb.entry[idx].page_mask);
+    tlb.entry[idx].odd_page_bit = last_set != FLS_EMPTY? (last_set + 13) : 12;
 
     tlb.entry[idx].entry_hi = cop0.entry_hi;
 

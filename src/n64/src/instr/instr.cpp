@@ -31,6 +31,31 @@ void instr_branch_likely(N64& n64, const Opcode& opcode, FUNC func)
     }   
 }
 
+template<typename T>
+std::optional<u64> translate_aligned_addr_read(N64& n64,u64 vaddr)
+{
+    if(vaddr & (sizeof(T) - 1))
+    {
+        address_error_exception(n64,vaddr,address_error::load);
+        return std::nullopt;
+    }
+
+    return translate_vaddr(n64,vaddr,tlb_access::read);
+}
+
+template<typename T>
+std::optional<u64> translate_aligned_addr_write(N64& n64,u64 vaddr)
+{
+    if(vaddr & (sizeof(T) - 1))
+    {
+        address_error_exception(n64,vaddr,address_error::store);
+        return std::nullopt;
+    }
+
+    return translate_vaddr(n64,vaddr,tlb_access::write);
+}
+
+
 }
 
 #include "instr/instr_r.cpp"
@@ -223,10 +248,20 @@ void instr_lb(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s8>(read_u8<debug>(n64,n64.cpu.regs[base] + imm));
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s8>(read_u8_physical<debug>(n64,phys_addr));
 }
-
 
 template<const b32 debug>
 void instr_lw(N64 &n64, const Opcode &opcode)
@@ -235,13 +270,7 @@ void instr_lw(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
-    if((vaddr & 3) != 0)
-    {
-        address_error_exception(n64,vaddr,address_error::load);
-        return;
-    }
-
-    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+    const auto phys_addr_opt = translate_aligned_addr_read<u32>(n64,vaddr);
 
     // invalid vaddr exception raised
     if(!phys_addr_opt) 
@@ -261,13 +290,17 @@ void instr_ld(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
-    if((vaddr & 7) != 0)
+    const auto phys_addr_opt = translate_aligned_addr_read<u64>(n64,vaddr);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
     {
-        address_error_exception(n64,vaddr,address_error::load);
         return;
     }
 
-    n64.cpu.regs[opcode.rt] = read_u64<debug>(n64,vaddr);
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.regs[opcode.rt] = read_u64_physical<debug>(n64,phys_addr);
 }
 
 template<const b32 debug>
@@ -275,13 +308,23 @@ void instr_ldl(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
-    const u32 offset = (addr & 7);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    const u32 offset = (vaddr & 7);
     const u64 mask = u64(0xffff'ffff'ffff'ffff) << (offset * 8);
 
     // 'rotate' like an unaligned arm load
-    u64 v = read_u64<debug>(n64,addr) << (offset * 8);
+    u64 v = read_u64_physical<debug>(n64,phys_addr) << (offset * 8);
 
     // combine reg with load
     v = (v & mask) | (u64(n64.cpu.regs[opcode.rt]) & ~mask);
@@ -294,9 +337,20 @@ void instr_lwu(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
+
+    const auto phys_addr_opt = translate_aligned_addr_read<u32>(n64,vaddr);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
 
     // not sign extended
-    n64.cpu.regs[opcode.rt] = read_u32<debug>(n64,n64.cpu.regs[base] + imm);
+    n64.cpu.regs[opcode.rt] = read_u32_physical<debug>(n64,phys_addr);
 }
 
 template<const b32 debug>
@@ -304,13 +358,23 @@ void instr_lwl(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
-    const u32 offset = (addr & 3);
+    const u32 offset = (vaddr & 3);
     const u32 mask = u32(0xffff'ffff) << (offset * 8);
 
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
     // 'rotate' like an unaligned arm load
-    u32 v = read_u32<debug>(n64,addr) << (offset * 8);
+    u32 v = read_u32_physical<debug>(n64,phys_addr) << (offset * 8);
 
     // combine reg with load
     v = (v & mask) | (u32(n64.cpu.regs[opcode.rt]) & ~mask);
@@ -324,14 +388,24 @@ void instr_lwr(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
     // right, so here 3 is identity
-    const u32 offset = 3 - (addr & 3);
+    const u32 offset = 3 - (vaddr & 3);
     const u32 mask = u32(0xffff'ffff) >> (offset * 8);
 
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
     // 'rotate' like an unaligned arm load
-    u32 v = read_u32<debug>(n64,addr) >> (offset * 8); 
+    u32 v = read_u32_physical<debug>(n64,phys_addr) >> (offset * 8); 
 
     // combine reg with load
     v = (v & mask) | (u32(n64.cpu.regs[opcode.rt]) & ~mask);
@@ -348,13 +422,7 @@ void instr_sw(N64 &n64, const Opcode &opcode)
 
     const u64 vaddr = n64.cpu.regs[base] + imm;
     
-    if((vaddr & 3) != 0)
-    {
-        address_error_exception(n64,vaddr,address_error::store);
-        return;
-    }
-
-    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
+    const auto phys_addr_opt = translate_aligned_addr_write<u32>(n64,vaddr);
 
     // invalid vaddr exception raised
     if(!phys_addr_opt) 
@@ -372,19 +440,29 @@ void instr_swl(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
-    const u32 offset = (addr & 3);
+    const u32 offset = (vaddr & 3);
     const u32 mask = u32(0xffff'ffff) >> (offset * 8);
 
     // 'rotate' like an unaligned arm load
     u32 v = u32(n64.cpu.regs[opcode.rt]) >> (offset * 8);
 
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
     // combine reg with load
-    v = (read_u32<debug>(n64,addr) & ~mask) | (v & mask);
+    v = (read_u32_physical<debug>(n64,phys_addr) & ~mask) | (v & mask);
 
     // sign extend ans back out;
-    write_u32<debug>(n64,addr,v);
+    write_u32_physical<debug>(n64,phys_addr,v);
 }
 
 template<const b32 debug>
@@ -392,19 +470,29 @@ void instr_swr(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
-    const u32 offset = 3 - (addr & 3);
+    const u32 offset = 3 - (vaddr & 3);
     const u32 mask = u32(0xffff'ffff) << (offset * 8);
 
     // 'rotate' like an unaligned arm load
     u32 v = u32(n64.cpu.regs[opcode.rt]) << (offset * 8);
 
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
     // combine reg with load
-    v = (read_u32<debug>(n64,addr) & ~mask) | (v & mask);
+    v = (read_u32_physical<debug>(n64,phys_addr) & ~mask) | (v & mask);
 
     // sign extend ans back out;
-    write_u32<debug>(n64,addr,v);
+    write_u32_physical<debug>(n64,phys_addr,v);
 }
 
 template<const b32 debug>
@@ -414,13 +502,16 @@ void instr_sh(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
-    if((vaddr & 1) != 0)
+    const auto phys_addr_opt = translate_aligned_addr_write<u16>(n64,vaddr);
+
+    if(!phys_addr_opt) 
     {
-        address_error_exception(n64,vaddr,address_error::store);
         return;
     }
 
-    write_u16<debug>(n64,vaddr,n64.cpu.regs[opcode.rt]);
+    const auto phys_addr = *phys_addr_opt;
+
+    write_u16_physical<debug>(n64,phys_addr,n64.cpu.regs[opcode.rt]);
 }
 
 template<const b32 debug>
@@ -430,13 +521,16 @@ void instr_sd(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
-    if((vaddr & 7) != 0)
+    const auto phys_addr_opt = translate_aligned_addr_write<u64>(n64,vaddr);
+
+    if(!phys_addr_opt) 
     {
-        address_error_exception(n64,vaddr,address_error::store);
         return;
     }
 
-    write_u64<debug>(n64,vaddr,n64.cpu.regs[opcode.rt]);
+    const auto phys_addr = *phys_addr_opt;
+
+    write_u64_physical<debug>(n64,phys_addr,n64.cpu.regs[opcode.rt]);
 }
 
 template<const b32 debug>
@@ -444,19 +538,29 @@ void instr_sdl(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
-    const u64 offset = (addr & 7);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    const u64 offset = (vaddr & 7);
     const u64 mask = u64(0xffff'ffff'ffff'ffff) >> (offset * 8);
 
     // 'rotate' like an unaligned arm load
     u64 v = n64.cpu.regs[opcode.rt] >> (offset * 8);
 
     // combine reg with load
-    v = (read_u64<debug>(n64,addr) & ~mask) | (v & mask);
+    v = (read_u64_physical<debug>(n64,phys_addr) & ~mask) | (v & mask);
 
     // sign extend ans back out;
-    write_u64<debug>(n64,addr,v);
+    write_u64_physical<debug>(n64,phys_addr,v);
 }
 
 template<const b32 debug>
@@ -464,19 +568,29 @@ void instr_sdr(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
 
-    const u64 offset = 7 - (addr & 7);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    const u64 offset = 7 - (vaddr & 7);
     const u64 mask = u64(0xffff'ffff'ffff'ffff) << (offset * 8);
 
     // 'rotate' like an unaligned arm load
     u64 v = n64.cpu.regs[opcode.rt] << (offset * 8);
 
     // combine reg with load
-    v = (read_u64<debug>(n64,addr) & ~mask) | (v & mask);
+    v = (read_u64_physical<debug>(n64,phys_addr) & ~mask) | (v & mask);
 
     // sign extend ans back out;
-    write_u64<debug>(n64,addr,v);
+    write_u64_physical<debug>(n64,phys_addr,v);
 }
 
 template<const b32 debug>
@@ -484,14 +598,21 @@ void instr_ll(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const u64 vaddr = n64.cpu.regs[base] + imm;
 
-    const u64 addr = n64.cpu.regs[base] + imm;
-    const u64 paddr = remap_addr<u32,true>(n64,addr);
+    const auto phys_addr_opt = translate_aligned_addr_read<u32>(n64,vaddr);
 
-    n64.cpu.cop0.load_linked = paddr >> 4;
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.cop0.load_linked = phys_addr >> 4;
     n64.cpu.cop0.ll_bit = true;
 
-    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s32>(read_u32<debug>(n64,addr));
+    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s32>(read_u32_physical<debug>(n64,phys_addr));
 }
 
 template<const b32 debug>
@@ -499,14 +620,21 @@ void instr_lld(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const u64 vaddr = n64.cpu.regs[base] + imm;
+    
+    const auto phys_addr_opt = translate_aligned_addr_read<u64>(n64,vaddr);
 
-    const u64 addr = n64.cpu.regs[base] + imm;
-    const u64 paddr = remap_addr<u64,true>(n64,addr);
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
 
-    n64.cpu.cop0.load_linked = paddr >> 4;
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.cop0.load_linked = phys_addr >> 4;
     n64.cpu.cop0.ll_bit = true;
 
-    n64.cpu.regs[opcode.rt] = read_u64<debug>(n64,addr);
+    n64.cpu.regs[opcode.rt] = read_u64_physical<debug>(n64,phys_addr);
 }
 
 template<const b32 debug>
@@ -514,14 +642,24 @@ void instr_ldr(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
-    u64 addr = (n64.cpu.regs[base] + imm);
+    const u64 vaddr = (n64.cpu.regs[base] + imm);
+
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
 
     // right, so here 3 is identity
-    const u32 offset = 7 - (addr & 7);
+    const u32 offset = 7 - (vaddr & 7);
     const u64 mask = u64(0xffff'ffff'ffff'ffff) >> (offset * 8);
 
     // 'rotate' like an unaligned arm load
-    u64 v = read_u64<debug>(n64,addr) >> (offset * 8); 
+    u64 v = read_u64_physical<debug>(n64,phys_addr) >> (offset * 8); 
 
     // combine reg with load
     v = (v & mask) | (u64(n64.cpu.regs[opcode.rt]) & ~mask);
@@ -535,8 +673,19 @@ void instr_lbu(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    n64.cpu.regs[opcode.rt] = read_u8<debug>(n64,n64.cpu.regs[base] + imm);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::read);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.regs[opcode.rt] = read_u8_physical<debug>(n64,phys_addr);
 }
 
 template<const b32 debug>
@@ -544,8 +693,19 @@ void instr_sb(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    write_u8<debug>(n64,n64.cpu.regs[base] + imm,n64.cpu.regs[opcode.rt]);
+    const auto phys_addr_opt = translate_vaddr(n64,vaddr,tlb_access::write);
+
+    // invalid vaddr exception raised
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    write_u8_physical<debug>(n64,phys_addr,n64.cpu.regs[opcode.rt]);
 }
 
 template<const b32 debug>
@@ -553,8 +713,18 @@ void instr_lhu(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
-    n64.cpu.regs[opcode.rt] = read_u16<debug>(n64,n64.cpu.regs[base] + imm);
+    const auto phys_addr_opt = translate_aligned_addr_read<u16>(n64,vaddr);
+
+    if(!phys_addr_opt) 
+    {
+        return;
+    }
+
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.regs[opcode.rt] = read_u16_physical<debug>(n64,phys_addr);
 }
 
 template<const b32 debug>
@@ -564,13 +734,16 @@ void instr_lh(N64 &n64, const Opcode &opcode)
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
     const auto vaddr = n64.cpu.regs[base] + imm;
 
-    if((vaddr & 1) != 0)
+    const auto phys_addr_opt = translate_aligned_addr_read<u16>(n64,vaddr);
+
+    if(!phys_addr_opt) 
     {
-        address_error_exception(n64,vaddr,address_error::load);
         return;
     }
 
-    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s16>(read_u16<debug>(n64,vaddr));
+    const auto phys_addr = *phys_addr_opt;
+
+    n64.cpu.regs[opcode.rt] = sign_extend_mips<s64,s16>(read_u16_physical<debug>(n64,phys_addr));
 }
 
 

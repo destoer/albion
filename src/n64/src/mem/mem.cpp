@@ -199,7 +199,7 @@ void reset_mem(Mem &mem, const std::string &filename)
 
 // TODO: Get rid of this function when everything has been swapped over
 template<typename T, const bool READ>
-u32 remap_addr(N64& n64,u32 addr)
+u32 remap_addr_no_except(N64& n64,u32 addr)
 {
     // TODO: do we care about caching?
     UNUSED(n64);
@@ -210,7 +210,7 @@ u32 remap_addr(N64& n64,u32 addr)
 
     if(is_set(tlb_set,idx))
     {
-        crash_and_burn("[PC: %08x] Non remapped TLB access %08x: %d %s",n64.cpu.pc,addr,sizeof(T),READ? "read" : "write");
+        crash_and_burn("[PC: %08x] Non remapped TLB access for debugger %08x: %d %s",n64.cpu.pc,addr,sizeof(T),READ? "read" : "write");
         return addr & 0x1FFF'FFFF;
     }
 
@@ -224,45 +224,15 @@ u32 remap_addr(N64& n64,u32 addr)
 
 
 template<typename access_type>
-void write_mem_internal(N64& n64, u32 addr, access_type v)
+void write_mem_raw(N64& n64, u32 addr, access_type v)
 {
-
     // force align addr
     addr &= ~(sizeof(access_type)-1);   
 
-    // auto& mem = n64.mem;
-
-    // const u32 idx = addr / PAGE_SIZE;
-
-    // if(mem.page_table_write[idx])
-    // {
-    //     return handle_write_n64<access_type>(mem.page_table_write[idx],addr & (PAGE_SIZE - 1),v);
-    // }
-
     // if we are doing a slow access remap the addr manually
-    addr = remap_addr<access_type,false>(n64,addr);
+    addr = remap_addr_no_except<access_type,false>(n64,addr);
 
     write_physical<access_type>(n64,addr,v);    
-}
-
-// for now assume accesses are force aligned
-// however they are supposed to throw exceptions
-// when they are not
-
-template<const b32 debug,typename access_type>
-void write_mem(N64 &n64, u32 addr, access_type v)
-{
-    if constexpr(debug)
-    {
-        if(n64.debug.breakpoint_hit(addr,v,break_type::write))
-        {
-            write_log(n64.debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
-            n64.debug.halt();
-        }
-    }
-
-    write_mem_internal<access_type>(n64,addr,v);
-    cycle_tick(n64,1);
 }
 
 template<const b32 debug,typename access_type>
@@ -282,51 +252,19 @@ void write_physical_debug(N64 &n64, u32 addr, access_type v)
 }
 
 
-// for now assume accesses are force aligned
-// however they are supposed to throw exceptions
-// when they are not
+// Debugger access only, does not throw exceptions
 
 template<typename access_type>
-access_type read_mem_internal(N64& n64, u32 addr)
+access_type read_mem_raw(N64& n64, u32 addr)
 {
-
     // force align addr
     addr &= ~(sizeof(access_type)-1);   
 
-    // auto& mem = n64.mem;
-
-    // const u32 idx = addr / PAGE_SIZE;
-
-    // if(mem.page_table_read[idx])
-    // {
-    //     return handle_read_n64<access_type>(mem.page_table_read[idx],addr & (PAGE_SIZE - 1));
-    // }
-
     // if we are doing a slow access remap the addr manually
-    addr = remap_addr<access_type,true>(n64,addr);
+    addr = remap_addr_no_except<access_type,true>(n64,addr);
 
     return read_physical<access_type>(n64,addr);    
 }
-
-template<const b32 debug,typename access_type>
-access_type read_mem(N64 &n64, u32 addr)
-{
-    const auto v = read_mem_internal<access_type>(n64,addr);
-
-    if constexpr(debug)
-    {
-        if(n64.debug.breakpoint_hit(addr,v,break_type::read))
-        {
-            write_log(n64.debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
-            n64.debug.halt();
-        }
-    }
-
-    cycle_tick(n64,1);
-
-    return v;
-}
-
 
 template<const b32 debug,typename access_type>
 access_type read_physical_debug(N64 &n64, u32 addr)
@@ -347,23 +285,16 @@ access_type read_physical_debug(N64 &n64, u32 addr)
     return v;
 }
 
-
 template<const b32 debug>
-u8 read_u8(N64 &n64,u32 addr)
+u8 read_u8_physical(N64 &n64,u32 addr)
 {
-    return read_mem<debug,u8>(n64,addr);
+    return read_physical_debug<debug,u8>(n64,addr);
 }
 
 template<const b32 debug>
-u16 read_u16(N64 &n64,u32 addr)
+u16 read_u16_physical(N64 &n64,u32 addr)
 {
-    return read_mem<debug,u16>(n64,addr);
-}
-
-template<const b32 debug>
-u32 read_u32(N64 &n64,u32 addr)
-{
-    return read_mem<debug,u32>(n64,addr);
+    return read_physical_debug<debug,u16>(n64,addr);
 }
 
 template<const b32 debug>
@@ -373,27 +304,21 @@ u32 read_u32_physical(N64 &n64,u32 addr)
 }
 
 template<const b32 debug>
-u64 read_u64(N64 &n64,u32 addr)
+u64 read_u64_physical(N64 &n64,u32 addr)
 {
-    return read_mem<debug,u64>(n64,addr);
+    return read_physical_debug<debug,u64>(n64,addr);
 }
 
 template<const b32 debug>
-void write_u8(N64 &n64,u32 addr,u8 v)
+void write_u8_physical(N64 &n64,u32 addr,u8 v)
 {
-    write_mem<debug,u8>(n64,addr,v);
+    write_physical_debug<debug,u8>(n64,addr,v);
 }
 
 template<const b32 debug>
-void write_u16(N64 &n64,u32 addr,u16 v)
+void write_u16_physical(N64 &n64,u32 addr,u16 v)
 {
-    write_mem<debug,u16>(n64,addr,v);
-}
-
-template<const b32 debug>
-void write_u32(N64 &n64,u32 addr,u32 v)
-{
-    write_mem<debug,u32>(n64,addr,v);
+    write_physical_debug<debug,u16>(n64,addr,v);
 }
 
 template<const b32 debug>
@@ -403,12 +328,10 @@ void write_u32_physical(N64 &n64,u32 addr,u32 v)
 }
 
 template<const b32 debug>
-void write_u64(N64 &n64,u32 addr,u64 v)
+void write_u64_physical(N64 &n64,u32 addr,u64 v)
 {
-    write_mem<debug,u64>(n64,addr,v);
+    write_physical_debug<debug,u64>(n64,addr,v);
 }
-
-
 
 }
 

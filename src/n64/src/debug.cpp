@@ -63,7 +63,7 @@ void N64Debug::step(const std::vector<Token> &args)
 
 std::string N64Debug::disass_instr(u64 addr)
 {
-    const u32 opcode = read_u32<false>(n64,addr);
+    const u32 opcode = read_mem_raw<u32>(n64,addr);
 
     const Opcode op = beyond_all_repair::make_opcode(opcode);  
 
@@ -86,12 +86,12 @@ u64 N64Debug::get_instr_size(u64 addr)
 
 u8 N64Debug::read_mem(u64 addr)
 {
-    return read_u8<false>(n64,addr);
+    return read_mem_raw<u8>(n64,addr);
 }
 
 void N64Debug::write_mem(u64 addr, u8 v)
 {
-    write_u8<false>(n64,addr,v);
+    write_mem_raw<u8>(n64,addr,v);
 }
 
 void N64Debug::change_breakpoint_enable(bool enable)

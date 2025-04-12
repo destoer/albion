@@ -25,21 +25,21 @@ b32 read_func(beyond_all_repair::Program& program,u64 addr,void* out, u32 size)
     {
         case 1:
         {
-            const u8 v = read_u8<false>(n64,addr);
+            const u8 v = read_mem_raw<u8>(n64,addr);
             memcpy(out,&v,size);
             break;
         }
 
         case 2:
         {
-            const u16 v = read_u16<false>(n64,addr);
+            const u16 v = read_mem_raw<u16>(n64,addr);
             memcpy(out,&v,size);
             break;            
         }
 
         case 4:
         {
-            const u32 v = read_u32<false>(n64,addr);
+            const u32 v = read_mem_raw<u32>(n64,addr);
             memcpy(out,&v,size);
             break;                    
         }
@@ -113,4 +113,12 @@ void run(N64& n64)
         run_internal<false>(n64);
     }
 }
+
+void dump_instr(N64& n64)
+{
+    const auto opcode = read_mem_raw<u32>(n64,n64.cpu.pc_fetch);
+    const auto op = beyond_all_repair::make_opcode(opcode);
+    spdlog::debug("{:16x}: {}\n",n64.cpu.pc_fetch,disass_n64(n64,op,n64.cpu.pc_next));
+}
+
 }

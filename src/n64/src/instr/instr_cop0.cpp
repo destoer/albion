@@ -44,10 +44,20 @@ void instr_sc(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
     if(n64.cpu.cop0.ll_bit)
     {
-        write_u32<debug>(n64,n64.cpu.regs[base] + imm,n64.cpu.regs[opcode.rt]);   
+        const auto phys_addr_opt = translate_aligned_addr_write<u32>(n64,vaddr);
+
+        if(!phys_addr_opt)
+        {
+            return;
+        }
+        
+        const auto phys_addr = *phys_addr_opt;
+
+        write_u32_physical<debug>(n64,phys_addr,n64.cpu.regs[opcode.rt]);   
     }
 
     n64.cpu.regs[opcode.rt] = n64.cpu.cop0.ll_bit;
@@ -59,10 +69,20 @@ void instr_scd(N64 &n64, const Opcode &opcode)
 {
     const auto base = opcode.rs;
     const auto imm = sign_extend_mips<s64,s16>(opcode.imm);
+    const auto vaddr = n64.cpu.regs[base] + imm;
 
     if(n64.cpu.cop0.ll_bit)
     {
-        write_u64<debug>(n64,n64.cpu.regs[base] + imm,n64.cpu.regs[opcode.rt]);
+        const auto phys_addr_opt = translate_aligned_addr_write<u64>(n64,vaddr);
+
+        if(!phys_addr_opt)
+        {
+            return;
+        }
+        
+        const auto phys_addr = *phys_addr_opt;
+
+        write_u64_physical<debug>(n64,phys_addr,n64.cpu.regs[opcode.rt]);
     }
 
     n64.cpu.regs[opcode.rt] = n64.cpu.cop0.ll_bit;
