@@ -109,22 +109,22 @@ void trap_cmp(N64& n64, b32 cmp_res)
 
 void instr_tge(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,s64(n64.cpu.regs[opcode.rs]) >= s64(n64.cpu.regs[opcode.rt]));
 }
 
 void instr_tgeu(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] >= n64.cpu.regs[opcode.rt]);
 }
 
 void instr_tlt(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,s64(n64.cpu.regs[opcode.rs]) < s64(n64.cpu.regs[opcode.rt]));
 }
 
 void instr_tltu(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] < n64.cpu.regs[opcode.rt]);
 }
 
 void instr_teq(N64 &n64, const Opcode &opcode)
@@ -134,49 +134,46 @@ void instr_teq(N64 &n64, const Opcode &opcode)
 
 void instr_tne(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] != n64.cpu.regs[opcode.rt]);
 }
 
 
 void instr_tlti(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,s16(n64.cpu.regs[opcode.rs]) < s16(opcode.imm));
 }
 
 void instr_tltiu(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] < opcode.imm);
 }
-
 
 
 void instr_tgtiu(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] > opcode.imm);
 }
 
 
 void instr_tgei(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,s16(n64.cpu.regs[opcode.rs]) >= s16(opcode.imm));
 }
 
 void instr_tgeiu(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] >= opcode.imm);
 }
 
 void instr_teqi(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] == opcode.imm);
 }
 
 void instr_tnei(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] != opcode.imm);
 }
-
-
 
 
 }
