@@ -51,8 +51,6 @@ void standard_exception(N64& n64, u32 code)
 
     switch(code)
     {
-        case beyond_all_repair::TLBL:
-        case beyond_all_repair::TLBS:
         case beyond_all_repair::TLBM:
         {
             // TODO: this is different in 64 bit
@@ -406,10 +404,10 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
             break;
         }
 
-        case beyond_all_repair::XCONFIG:
+        case beyond_all_repair::XCONTEXT:
         {
-            cop0.xconfig.pte = v >> 32;
-            spdlog::trace("COP0 xconfig pte 0x{:x}",cop0.xconfig.pte);
+            cop0.xcontext.pte = v >> 32;
+            spdlog::trace("COP0 xcontext pte 0x{:x}",cop0.xcontext.pte);
             break;
         }
 
@@ -526,9 +524,9 @@ u64 read_cop0(N64& n64, u32 reg)
             return cop0.watchHi.paddr1 & 0b111;
         }
 
-        case XCONFIG:
+        case XCONTEXT:
         {
-            return (u64) cop0.xconfig.pte << 33 | (cop0.xconfig.r & 0b11) << 31 | cop0.xconfig.bad_vpn << 3;
+            return (u64) cop0.xcontext.pte << 33 | (cop0.xcontext.region & 0b11) << 31 | cop0.xcontext.bad_vpn2 << 4;
         }
 
         case PARITY_ERROR:

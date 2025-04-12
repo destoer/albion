@@ -71,19 +71,19 @@ struct Config {
 };
 
 struct WatchLo {
-    u32 paddr0;
-    u8 read;
-    u8 write;
+    u32 paddr0 = 0;
+    u8 read = 0;
+    u8 write = 0;
 };
 
 struct WatchHi {
-    u8 paddr1;
+    u8 paddr1 = 0;
 };
 
-struct XConfig {
-    u32 pte;
-    u8 r;
-    u32 bad_vpn;
+struct XContext {
+    u32 pte = 0;
+    u8 region = 0;
+    u32 bad_vpn2 = 0;
 };
 
 // TODO: factor these into structs
@@ -130,7 +130,7 @@ struct Cop0
 
     u8 parity = 0;
 
-    XConfig xconfig;
+    XContext xcontext;
 
     u32 load_linked = ~0u;
 };

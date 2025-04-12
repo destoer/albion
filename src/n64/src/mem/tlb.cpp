@@ -11,6 +11,16 @@ enum class tlb_access
     read,
 };
 
+void set_tlb_exception_regs(N64& n64, u32 full_vpn, u32 region)
+{
+    auto& context = n64.cpu.cop0.context;
+    auto& xcontext = n64.cpu.cop0.xcontext;
+
+    context.bad_vpn2 = full_vpn & 0x0007'ffff;
+    xcontext.bad_vpn2 = full_vpn;
+    xcontext.region = region;
+}
+
 std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
     const u16 tlb_set = 0b11'11'00'00'11111111;
     const u32 idx = (addr & 0xf000'0000) >> 28;
@@ -27,16 +37,15 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
     auto& cop0 = n64.cpu.cop0;
     auto& tlb = n64.mem.tlb;
 
+    // For 32 bit mode, 64 bit is just full at 27 bits
+    const u64 vpn2_mode_mask = 0x0007'ffff;
+
+    const u32 region = (addr >> 62) & 0b11;
+    const u32 vpn2 = (addr >> 13) & vpn2_mode_mask;
+    const u32 full_vpn = (addr >> 13) & 0x07ff'ffff;
+
     // assume a 32 bit address, change this in 64 bit mode?
     addr &= 0xffff'ffff;
-
-    // For 32 bit mode, 64 bit is just full at 27 bits
-    const u64 vpn2_mode_mask = 0x7ffff;
-
-    // context used in 32 bit, otherwhise xcontext
-    auto& context = n64.cpu.cop0.context;
-
-    const u32 vpn2 = (addr >> 13) & vpn2_mode_mask;
 
     // Scan for a match in the tlb
     for(u32 e = 0; e < TLB_SIZE; e++) 
@@ -63,7 +72,7 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
             // Attempt to write to a read only entry!
             if(!entry_lo.d && access == tlb_access::write)
             {
-                context.bad_vpn2 = vpn2;
+                set_tlb_exception_regs(n64,full_vpn,region);
                 bad_vaddr_exception(n64,addr,beyond_all_repair::TLBM);
                 return std::nullopt;
             }
@@ -82,14 +91,14 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
     {
         case tlb_access::read:
         {
-            context.bad_vpn2 =  vpn2;
+            set_tlb_exception_regs(n64,full_vpn,region);
             bad_vaddr_exception(n64,addr,beyond_all_repair::TLBL);
             break;
         }
 
         case tlb_access::write:
         {
-            context.bad_vpn2 = vpn2;
+            set_tlb_exception_regs(n64,full_vpn,region);
             bad_vaddr_exception(n64,addr,beyond_all_repair::TLBS);
             break;
         }
