@@ -13,31 +13,65 @@ void instr_unknown_cop2(N64 &n64, const Opcode &opcode)
 template<const b32 debug>
 void instr_COP2(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_cop2(n64,opcode);
+    const u32 offset = beyond_all_repair::calc_cop2_table_offset(opcode);
+
+    call_handler<debug>(n64,opcode,offset);
 }
 
 template<const b32 debug>
 void instr_lwc2(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_opcode(n64,opcode);
+    instr_unknown_cop2(n64,opcode);
 }
 
 template<const b32 debug>
 void instr_ldc2(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_opcode(n64,opcode);
+    instr_unknown_cop2(n64,opcode);
 }
 
 template<const b32 debug>
 void instr_swc2(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_opcode(n64,opcode);
+    instr_unknown_cop2(n64,opcode);
 }
 
 template<const b32 debug>
 void instr_sdc2(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_opcode(n64,opcode);
+    instr_unknown_cop2(n64,opcode);
 }
+
+void instr_mfc2(N64& n64, const Opcode& opcode)
+{
+    UNUSED(opcode);
+    coprocesor_unusable(n64,2);
+}
+
+void instr_dmfc2(N64& n64, const Opcode& opcode)
+{
+    instr_unknown_cop2(n64,opcode);
+}
+
+void instr_cfc2(N64& n64, const Opcode& opcode)
+{
+    instr_unknown_cop2(n64,opcode);
+}
+
+void instr_mtc2(N64& n64, const Opcode& opcode)
+{
+    instr_unknown_cop2(n64,opcode);
+}
+
+void instr_dmtc2(N64& n64, const Opcode& opcode)
+{
+    instr_unknown_cop2(n64,opcode);
+}
+
+void instr_ctc2(N64& n64, const Opcode& opcode)
+{
+    instr_unknown_cop2(n64,opcode);
+}
+
 
 }
