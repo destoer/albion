@@ -161,9 +161,13 @@ void instr_tlbp(N64& n64, const Opcode &opcode)
     {
         auto& entry = tlb.entry[e];
 
+        const u32 entry_vpn2 = entry.entry_hi.vpn2 & ~entry.page_mask;
+        const u32 vpn2 = cop0.entry_hi.vpn2 & ~entry.page_mask;
+
         // scan for a matching page number with, either a matching asid or ignore
-        if((entry.entry_hi.vpn2 == cop0.entry_hi.vpn2) && 
-            ((entry.entry_lo_zero.g)|| entry.entry_hi.asid == cop0.entry_hi.asid))
+        if((vpn2 == entry_vpn2) && 
+            (entry.entry_lo_zero.g || (entry.entry_hi.asid == cop0.entry_hi.asid)) &&
+            (entry.entry_hi.region == cop0.entry_hi.region))
         {
             cop0.index.idx = e;
             cop0.index.p = false;
@@ -171,6 +175,7 @@ void instr_tlbp(N64& n64, const Opcode &opcode)
         }
     }
 
+    cop0.index.idx = 0;
     cop0.index.p = true;
 }
 
