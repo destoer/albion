@@ -21,7 +21,7 @@ void check_cop1_exception(N64& n64)
 {
     auto& cop1 = n64.cpu.cop1;
 
-    if((cop1.enable & cop1.cause) || is_set(cop1.cause,6))
+    if((cop1.enable & cop1.cause) || is_set(cop1.cause,5))
     {
         standard_exception(n64,beyond_all_repair::FLOATING_POINT_EXCEPTION);
     }
