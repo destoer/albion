@@ -325,7 +325,7 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
 
             status.im = (v >> 8) & 0xff;
 
-            status.ds = (v >> 16) & 0x1ff;
+            status.ds = (v >> 16) & 0b1'0111'0111;
 
             status.re = is_set(v,25);
             status.fr = is_set(v,26);
