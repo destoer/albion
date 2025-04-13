@@ -456,8 +456,7 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
 
         case beyond_all_repair::BAD_VADDR:
         {
-            cop0.bad_vaddr = v;
-            spdlog::trace("COP0 Bad vaddr 0x{:x}",cop0.bad_vaddr);
+            spdlog::trace("Wrote readonly bad vaddr");
             break;
         }
 
