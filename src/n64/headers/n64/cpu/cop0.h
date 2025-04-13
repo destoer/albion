@@ -90,7 +90,6 @@ struct XContext {
 struct Cop0
 {
     // cp0 regs
-
     Status status;
 
     // cp0 cuase
@@ -133,6 +132,8 @@ struct Cop0
     XContext xcontext;
 
     u32 load_linked = ~0u;
+
+    u64 unused_reg = 0;
 };
 
 static constexpr u32 COUNT_BIT = 7;

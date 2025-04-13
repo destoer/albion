@@ -258,6 +258,9 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
     auto &cpu = n64.cpu;
     auto &cop0 = cpu.cop0;
 
+    // last written value st ored
+    cop0.unused_reg = v;
+
     switch(reg)
     {
         // cycle counter (incremented every other cycle)
@@ -454,12 +457,6 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
             break;
         }
 
-        case beyond_all_repair::BAD_VADDR:
-        {
-            spdlog::trace("Wrote readonly bad vaddr");
-            break;
-        }
-
         case beyond_all_repair::LLADDR:
         {
             cop0.load_linked = v;
@@ -488,8 +485,13 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
         case beyond_all_repair::PRID:
         case beyond_all_repair::PARITY_ERROR:
         case beyond_all_repair::CACHE_ERROR:
+        case beyond_all_repair::BAD_VADDR:
+        
+        // unused regs (has last written value)
         case 7: case 21: case 22: case 23: case 24: case 25: case 31:
+        {
             break;
+        }
 
         default:
         {
@@ -649,6 +651,13 @@ u64 read_cop0(N64& n64, u32 reg)
         {
             return cop0.wired;
         }
+
+        // unused regs
+        case 7: case 21: case 22: case 23: case 24: case 25: case 31:
+        {
+            return cop0.unused_reg;
+        }
+
 
         default:
         {
