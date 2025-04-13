@@ -140,12 +140,12 @@ void instr_tne(N64 &n64, const Opcode &opcode)
 
 void instr_tlti(N64 &n64, const Opcode &opcode)
 {
-    trap_cmp(n64,s16(n64.cpu.regs[opcode.rs]) < s16(opcode.imm));
+    trap_cmp(n64,s64(n64.cpu.regs[opcode.rs]) < s16(opcode.imm));
 }
 
 void instr_tltiu(N64 &n64, const Opcode &opcode)
 {
-    trap_cmp(n64,n64.cpu.regs[opcode.rs] < opcode.imm);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] < u64(s16(opcode.imm)));
 }
 
 
@@ -157,22 +157,22 @@ void instr_tgtiu(N64 &n64, const Opcode &opcode)
 
 void instr_tgei(N64 &n64, const Opcode &opcode)
 {
-    trap_cmp(n64,s16(n64.cpu.regs[opcode.rs]) >= s16(opcode.imm));
+    trap_cmp(n64,s64(n64.cpu.regs[opcode.rs]) >= s16(opcode.imm));
 }
 
 void instr_tgeiu(N64 &n64, const Opcode &opcode)
 {
-    trap_cmp(n64,n64.cpu.regs[opcode.rs] >= opcode.imm);
+    trap_cmp(n64,n64.cpu.regs[opcode.rs] >= u64(s16(opcode.imm)));
 }
 
 void instr_teqi(N64 &n64, const Opcode &opcode)
 {
-    trap_cmp(n64,n64.cpu.regs[opcode.rs] == opcode.imm);
+    trap_cmp(n64,s64(n64.cpu.regs[opcode.rs]) == s16(opcode.imm));
 }
 
 void instr_tnei(N64 &n64, const Opcode &opcode)
 {
-    trap_cmp(n64,n64.cpu.regs[opcode.rs] != opcode.imm);
+    trap_cmp(n64,s64(n64.cpu.regs[opcode.rs]) != s16(opcode.imm));
 }
 
 

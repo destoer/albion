@@ -11,6 +11,11 @@ void standard_exception(N64& n64, u32 code)
     auto& status = cop0.status;
     auto& cause = cop0.cause;
 
+    if(code != beyond_all_repair::COP_UNUSABLE)
+    {
+        cause.coprocessor_error = 0;
+    }
+
     cause.exception_code = code;
 
     const bool double_fault = status.exl;
