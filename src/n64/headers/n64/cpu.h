@@ -50,4 +50,6 @@ const u32 KERNEL_MODE = 0b00;
 const u32 SUPERVISOR_MODE = 0b01;
 const u32 USER_MODE = 0b10;
 
+void dump_instr(N64& n64);
+
 }

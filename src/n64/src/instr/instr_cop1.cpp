@@ -186,18 +186,61 @@ void instr_sdc1(N64 &n64, const Opcode &opcode)
 
 void instr_cfc1(N64& n64, const Opcode &opcode)
 {
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
     const u32 fs = get_fs(opcode);
     n64.cpu.regs[opcode.rt] = read_cop1_control(n64,fs);
 }
 
 void instr_ctc1(N64& n64, const Opcode &opcode)
 {
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
     const u32 fs = get_fs(opcode);
     write_cop1_control(n64,fs,n64.cpu.regs[opcode.rt]);
 }
 
+void instr_dcfc1(N64& n64, const Opcode &opcode)
+{
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
+    const u32 fs = get_fs(opcode);
+    n64.cpu.regs[opcode.rt] = read_cop1_control(n64,fs);
+}
+
+void instr_dctc1(N64& n64, const Opcode &opcode)
+{
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
+    const u32 fs = get_fs(opcode);
+    write_cop1_control(n64,fs,n64.cpu.regs[opcode.rt]);
+}
+
+
 void instr_mtc1(N64& n64, const Opcode &opcode)
 {
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
     const u32 fs = get_fs(opcode);
     
     const f32 f = bit_cast_float(n64.cpu.regs[opcode.rt]);
@@ -206,6 +249,12 @@ void instr_mtc1(N64& n64, const Opcode &opcode)
 
 void instr_mfc1(N64& n64, const Opcode& opcode)
 {
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
     const u32 fs = get_fs(opcode);
 
     const s32 w = bit_cast_from_float(read_cop1_reg(n64,fs));
@@ -214,6 +263,12 @@ void instr_mfc1(N64& n64, const Opcode& opcode)
 
 void instr_dmfc1(N64& n64, const Opcode &opcode)
 {
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
     const u32 fs = get_fs(opcode);
     const s64 val = bit_cast_from_double(read_cop1_reg(n64, fs));
     n64.cpu.regs[opcode.rt] = val;
@@ -221,6 +276,12 @@ void instr_dmfc1(N64& n64, const Opcode &opcode)
 
 void instr_dmtc1(N64& n64, const Opcode &opcode)
 {
+    // coprocesor unusable
+    if(!cop1_usable(n64))
+    {
+        return;
+    }
+
     const u32 fs = get_fs(opcode);
     const f64 val = bit_cast_double(n64.cpu.regs[opcode.rt]);
 

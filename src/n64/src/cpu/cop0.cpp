@@ -82,6 +82,7 @@ void standard_exception(N64& n64, u32 code)
 
 void coprocesor_unusable(N64& n64, u32 number)
 {
+    dump_instr(n64);
     // set coprocessor number, then its just a standard exception
     // with the cop exception code?
     auto& cause = n64.cpu.cop0.cause;
