@@ -26,7 +26,7 @@ void instr_REGIMM(N64& n64, const Opcode& opcode)
 
 void instr_bgez(N64& n64, const Opcode& opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) >= 0;
     }); 
@@ -34,7 +34,7 @@ void instr_bgez(N64& n64, const Opcode& opcode)
 
 void instr_bgezl(N64 &n64, const Opcode &opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) >= 0;
     }); 
@@ -42,10 +42,7 @@ void instr_bgezl(N64 &n64, const Opcode &opcode)
 
 void instr_bgezal(N64 &n64, const Opcode &opcode)
 {
-    // link unconditonally
-    n64.cpu.regs[beyond_all_repair::RA] = n64.cpu.pc_next;
-
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::linked,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) >= 0;
     });
@@ -53,12 +50,16 @@ void instr_bgezal(N64 &n64, const Opcode &opcode)
 
 void instr_bgezall(N64 &n64, const Opcode &opcode)
 {
-    instr_unknown_regimm(n64,opcode);
+
+    instr_branch_likely(n64,opcode,branch_kind::linked,[](N64& n64, const Opcode& opcode)
+    {
+        return s64(n64.cpu.regs[opcode.rs]) >= 0;
+    });
 }
 
 void instr_bltz(N64 &n64, const Opcode &opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) < 0;
     });   
@@ -66,7 +67,7 @@ void instr_bltz(N64 &n64, const Opcode &opcode)
 
 void instr_bltzl(N64 &n64, const Opcode &opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) < 0;
     }); 
@@ -74,10 +75,7 @@ void instr_bltzl(N64 &n64, const Opcode &opcode)
 
 void instr_bltzal(N64 &n64, const Opcode &opcode)
 {
-    // link unconditonally
-    n64.cpu.regs[beyond_all_repair::RA] = n64.cpu.pc_next;
-
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::linked,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) < 0;
     });   
@@ -85,10 +83,7 @@ void instr_bltzal(N64 &n64, const Opcode &opcode)
 
 void instr_bltzall(N64 &n64, const Opcode &opcode)
 {
-    // link unconditonally
-    n64.cpu.regs[beyond_all_repair::RA] = n64.cpu.pc_next;
-
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::linked,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) < 0;
     }); 

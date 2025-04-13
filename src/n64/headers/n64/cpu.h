@@ -17,6 +17,12 @@ enum class branch_delay_state
 };
 
 
+enum class branch_kind
+{
+    normal,
+    linked,
+};
+
 struct Cpu
 {
     u64 regs[32];

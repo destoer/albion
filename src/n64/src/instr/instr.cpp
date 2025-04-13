@@ -4,9 +4,18 @@ namespace nintendo64
 {
 
 template<typename FUNC>
-void instr_branch(N64& n64, const Opcode& opcode, FUNC func)
+void instr_branch(N64& n64, const Opcode& opcode, branch_kind kind, FUNC func)
 {
-    if(func(n64,opcode))
+    // This has to happen before we write the RA
+    const auto cond = func(n64,opcode);
+
+    if(kind == branch_kind::linked)
+    {
+        // link unconditonally
+        n64.cpu.regs[beyond_all_repair::RA] = n64.cpu.pc_next;
+    }
+
+    if(cond)
     {
         const auto target = compute_branch_addr(n64.cpu.pc,opcode.imm);
 
@@ -15,9 +24,18 @@ void instr_branch(N64& n64, const Opcode& opcode, FUNC func)
 }
 
 template<typename FUNC>
-void instr_branch_likely(N64& n64, const Opcode& opcode, FUNC func)
+void instr_branch_likely(N64& n64, const Opcode& opcode, branch_kind kind, FUNC func)
 {
-    if(func(n64,opcode))
+    // This has to happen before we write the RA
+    const auto cond = func(n64,opcode);
+
+    if(kind == branch_kind::linked)
+    {
+        // link unconditonally
+        n64.cpu.regs[beyond_all_repair::RA] = n64.cpu.pc_next;
+    }
+
+    if(cond)
     {
         const auto target = compute_branch_addr(n64.cpu.pc,opcode.imm);
 
@@ -196,7 +214,7 @@ void instr_j(N64 &n64, const Opcode &opcode)
 
 void instr_beql(N64 &n64, const Opcode &opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return n64.cpu.regs[opcode.rs] == n64.cpu.regs[opcode.rt];
     });
@@ -204,7 +222,7 @@ void instr_beql(N64 &n64, const Opcode &opcode)
 
 void instr_blezl(N64 &n64, const Opcode &opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) <= 0;
     });
@@ -212,7 +230,7 @@ void instr_blezl(N64 &n64, const Opcode &opcode)
 
 void instr_bnel(N64 &n64, const Opcode &opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return n64.cpu.regs[opcode.rs] != n64.cpu.regs[opcode.rt];
     });
@@ -221,7 +239,7 @@ void instr_bnel(N64 &n64, const Opcode &opcode)
 
 void instr_bne(N64 &n64, const Opcode &opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return n64.cpu.regs[opcode.rs] != n64.cpu.regs[opcode.rt];
     });
@@ -229,7 +247,7 @@ void instr_bne(N64 &n64, const Opcode &opcode)
 
 void instr_beq(N64 &n64, const Opcode &opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return n64.cpu.regs[opcode.rs] == n64.cpu.regs[opcode.rt];
     });
@@ -749,7 +767,7 @@ void instr_lh(N64 &n64, const Opcode &opcode)
 
 void instr_bgtz(N64 &n64, const Opcode &opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) > 0;
     });
@@ -757,7 +775,7 @@ void instr_bgtz(N64 &n64, const Opcode &opcode)
 
 void instr_blez(N64& n64, const Opcode& opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) <= 0;
     });
@@ -765,7 +783,7 @@ void instr_blez(N64& n64, const Opcode& opcode)
 
 void instr_bgtzl(N64& n64, const Opcode& opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         return s64(n64.cpu.regs[opcode.rs]) > 0;
     }); 

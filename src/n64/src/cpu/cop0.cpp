@@ -80,9 +80,8 @@ void standard_exception(N64& n64, u32 code)
     skip_instr(n64.cpu); 
 }
 
-void coprocesor_unusable(N64& n64, u32 number)
+void coprocessor_unusable(N64& n64, u32 number)
 {
-    dump_instr(n64);
     // set coprocessor number, then its just a standard exception
     // with the cop exception code?
     auto& cause = n64.cpu.cop0.cause;
@@ -156,7 +155,7 @@ b32 cop0_usable(N64& n64)
     // coprocesor unusable if disabled and not in kernel mode
     if(!status.cu0 && (status.ksu != KERNEL_MODE))
     {
-        coprocesor_unusable(n64,0);
+        coprocessor_unusable(n64,0);
         return false;
     }
 

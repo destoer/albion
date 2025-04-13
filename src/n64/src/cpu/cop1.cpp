@@ -9,7 +9,7 @@ b32 cop1_usable(N64& n64)
 
     if(!status.cu1)
     {
-        coprocesor_unusable(n64,1);
+        coprocessor_unusable(n64,1);
         return false;
     }
 

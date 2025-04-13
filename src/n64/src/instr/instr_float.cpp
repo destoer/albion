@@ -738,7 +738,7 @@ void instr_c_ngt_s(N64& n64, const Opcode& opcode)
 
 void instr_bc1tl(N64& n64, const Opcode& opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         UNUSED(opcode);
         return n64.cpu.cop1.c;
@@ -747,7 +747,7 @@ void instr_bc1tl(N64& n64, const Opcode& opcode)
 
 void instr_bc1fl(N64& n64, const Opcode& opcode)
 {
-    instr_branch_likely(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch_likely(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         UNUSED(opcode);
         return !n64.cpu.cop1.c;
@@ -756,7 +756,7 @@ void instr_bc1fl(N64& n64, const Opcode& opcode)
 
 void instr_bc1t(N64& n64, const Opcode& opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         UNUSED(opcode);
         return n64.cpu.cop1.c;
@@ -765,7 +765,7 @@ void instr_bc1t(N64& n64, const Opcode& opcode)
 
 void instr_bc1f(N64& n64, const Opcode& opcode)
 {
-    instr_branch(n64,opcode,[](N64& n64, const Opcode& opcode)
+    instr_branch(n64,opcode,branch_kind::normal,[](N64& n64, const Opcode& opcode)
     {
         UNUSED(opcode);
         return !n64.cpu.cop1.c;
