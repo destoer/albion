@@ -479,10 +479,14 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
             break;
         }
 
+        case beyond_all_repair::PARITY_ERROR:
+        {
+            cop0.parity = v & 0xff;
+        }
+
         // read only
         case beyond_all_repair::RANDOM:
         case beyond_all_repair::PRID:
-        case beyond_all_repair::PARITY_ERROR:
         case beyond_all_repair::CACHE_ERROR:
         case beyond_all_repair::BAD_VADDR:
         
