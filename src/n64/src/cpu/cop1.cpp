@@ -94,9 +94,10 @@ u32 read_cop1_control(N64& n64, u32 idx)
             (cop1.enable << 7) | (cop1.flags << 2) | cop1.rounding;
         }
 
+        // revision register
         case 0: 
         {
-            return cop1.revision | (cop1.implementation);
+            return 0xa00;
         }
 
         default: return 0;

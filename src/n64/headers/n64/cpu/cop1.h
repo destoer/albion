@@ -3,10 +3,6 @@ namespace nintendo64
 
 struct Cop1
 {
-    // what are these supposed to be?
-    u32 implementation = 5;
-    u32 revision = 2;
-
     b32 fs = false;
     b32 c = false;
     u32 cause = 0;
