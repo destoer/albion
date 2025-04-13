@@ -21,12 +21,9 @@ void check_cop1_exception(N64& n64)
 {
     auto& cop1 = n64.cpu.cop1;
 
-    if(cop1.enable & cop1.cause || is_set(cop1.cause,6))
+    if((cop1.enable & cop1.cause) || is_set(cop1.cause,6))
     {
-        // TODO: we need to look at exception handling
-        // see the exception chapter... looks like FPE bit
-        // and whatever the normal exception handling is...
-        assert(false);
+        standard_exception(n64,beyond_all_repair::FLOATING_POINT_EXCEPTION);
     }
 }
 
@@ -42,8 +39,7 @@ void write_cop1_control(N64& n64, u32 idx, u32 v)
         cop1.fs = is_set(v,24);
         cop1.c = is_set(v,23);
 
-        // cause is read only
-        // dont write it
+        cop1.cause = (v >> 12) & 0b111'111;
 
         cop1.enable = (v >> 7) & 0b111'11;
         cop1.flags = (v >> 2) & 0b111'11;
