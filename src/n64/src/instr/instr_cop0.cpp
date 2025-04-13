@@ -21,7 +21,7 @@ void instr_COP0(N64 &n64, const Opcode &opcode)
 
 void instr_mtc0(N64 &n64, const Opcode &opcode)
 {
-    write_cop0(n64,u32(n64.cpu.regs[opcode.rt]),opcode.rd); 
+    write_cop0(n64,sign_extend_mips<s64,s32>(n64.cpu.regs[opcode.rt]),opcode.rd); 
 }
 
 void instr_dmtc0(N64 &n64, const Opcode &opcode)

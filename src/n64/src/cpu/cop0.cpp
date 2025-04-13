@@ -414,7 +414,7 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
 
         case beyond_all_repair::XCONTEXT:
         {
-            cop0.xcontext.pte = v >> 32;
+            cop0.xcontext.pte = v >> 33;
             spdlog::trace("COP0 xcontext pte 0x{:x}",cop0.xcontext.pte);
             break;
         }
