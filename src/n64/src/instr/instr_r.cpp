@@ -160,7 +160,8 @@ void instr_sub(N64& n64, const Opcode& opcode)
 
     if(ssub_overflow(s32(n64.cpu.regs[opcode.rs]),s32(n64.cpu.regs[opcode.rt])))
     {
-        unimplemented("sub overflow");
+        standard_exception(n64,beyond_all_repair::ARITHMETIC_OVERFLOW);
+        return;
     }
 
     else
@@ -181,7 +182,8 @@ void instr_dsub(N64 &n64, const Opcode &opcode)
 
     if(ssub_overflow(s64(n64.cpu.regs[opcode.rs]),s64(n64.cpu.regs[opcode.rt])))
     {
-        unimplemented("sub overflow");
+        standard_exception(n64,beyond_all_repair::ARITHMETIC_OVERFLOW);
+        return;
     }
 
     else
@@ -208,7 +210,8 @@ void instr_add(N64 &n64, const Opcode &opcode)
 
     if(sadd_overflow(s32(n64.cpu.regs[opcode.rs]),s32(n64.cpu.regs[opcode.rt])))
     {
-        unimplemented("instr_add overflow");
+        standard_exception(n64,beyond_all_repair::ARITHMETIC_OVERFLOW);
+        return;
     }
 
     else
@@ -223,7 +226,8 @@ void instr_dadd(N64 &n64, const Opcode &opcode)
 
     if(sadd_overflow(s64(n64.cpu.regs[opcode.rs]),s64(n64.cpu.regs[opcode.rt])))
     {
-        unimplemented("instr_dadd overflow");
+        standard_exception(n64,beyond_all_repair::ARITHMETIC_OVERFLOW);
+        return;
     }
 
     else

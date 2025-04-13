@@ -136,9 +136,10 @@ void instr_addi(N64 &n64, const Opcode &opcode)
     const auto ans = sign_extend_mips<s64,s32>(u32(n64.cpu.regs[opcode.rs]) + imm);  
 
     // TODO: speed this up with builtins
-    if(did_overflow(s32(n64.cpu.regs[opcode.rs]),s32(imm),s32(ans)))
+    if(sadd_overflow(s32(n64.cpu.regs[opcode.rs]),s32(imm)))
     {
-        unimplemented("addi exception!");
+        standard_exception(n64,beyond_all_repair::ARITHMETIC_OVERFLOW);
+        return;
     }  
 
     else
@@ -156,9 +157,10 @@ void instr_daddi(N64 &n64, const Opcode &opcode)
     const s64 ans = n64.cpu.regs[opcode.rs] + imm;  
 
     // TODO: speed this up with builtins
-    if(did_overflow(s64(n64.cpu.regs[opcode.rs]),imm,ans))
+    if(sadd_overflow(s64(n64.cpu.regs[opcode.rs]),imm))
     {
-        unimplemented("daddi exception!");
+        standard_exception(n64,beyond_all_repair::ARITHMETIC_OVERFLOW);
+        return;
     }  
 
     else
