@@ -293,7 +293,6 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
         
         case beyond_all_repair::CONTEXT:
         {
-            cop0.context.bad_vpn2 = (v >> 4) & 0x7ffff;
             cop0.context.pte_base = (v >> 23);
             break;
         }

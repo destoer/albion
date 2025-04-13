@@ -59,7 +59,7 @@ struct Index
 struct Context
 {
     u32 bad_vpn2 = 0;
-    u32 pte_base = 0;
+    u64 pte_base = 0;
 };
 
 struct Config {
