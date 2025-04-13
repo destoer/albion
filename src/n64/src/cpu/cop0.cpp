@@ -23,7 +23,7 @@ void standard_exception(N64& n64, u32 code)
     // EPC not saved for a double fault
     if(!double_fault)
     {
-        if(!in_delay_slot(n64.cpu))
+        if(n64.cpu.branch_delay != branch_delay_state::during)
         {
             cop0.epc = n64.cpu.pc_fetch;
             cause.branch_delay = false;

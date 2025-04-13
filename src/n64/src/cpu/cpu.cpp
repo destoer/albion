@@ -68,7 +68,16 @@ void cycle_tick(N64 &n64, u32 cycles)
 
 template<const b32 debug>
 void step(N64 &n64)
-{    
+{   
+    const branch_delay_state branch_delay_next[] = 
+    {
+        branch_delay_state::during,
+        branch_delay_state::end,
+        branch_delay_state::end,
+    };
+
+    n64.cpu.branch_delay = branch_delay_next[u32(n64.cpu.branch_delay)];
+
     n64.cpu.pc_fetch = n64.cpu.pc;
 
     if((n64.cpu.pc & 3) != 0)
@@ -94,7 +103,7 @@ void step(N64 &n64)
         if(n64.debug.breakpoint_hit(u32(pc_phys_addr),op,break_type::execute))
         {
             // halt until told otherwhise :)
-            n64.debug.print_console("[DEBUG] execute breakpoint hit ({:x}:{:x})\n",n64.cpu.pc,op);
+            n64.debug.print_console("execute breakpoint hit ({:x}:{:x})\n",n64.cpu.pc,op);
             n64.debug.halt();
             return;
         }
@@ -132,9 +141,15 @@ void write_pc(N64 &n64, u64 pc)
     n64.cpu.pc_next = pc;
 }
 
-void write_call(N64 &n64, u64 pc)
+void write_pc_delayed(N64& n64, u64 pc)
 {
     write_pc(n64,pc);
+    n64.cpu.branch_delay = branch_delay_state::start;
+}
+
+void write_call(N64 &n64, u64 pc)
+{
+    write_pc_delayed(n64,pc);
     n64.debug.last_call = pc;
 }
 
@@ -143,11 +158,6 @@ void skip_instr(Cpu &cpu)
 {
     cpu.pc = cpu.pc_next;
     cpu.pc_next += beyond_all_repair::MIPS_INSTR_SIZE;
-}
-
-bool in_delay_slot(Cpu& cpu)
-{
-    return cpu.pc_fetch + beyond_all_repair::MIPS_INSTR_SIZE != cpu.pc;
 }
 
 }

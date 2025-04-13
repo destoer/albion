@@ -426,7 +426,7 @@ void instr_xor(N64 &n64, const Opcode &opcode)
 
 void instr_jr(N64 &n64, const Opcode &opcode)
 {
-    write_pc(n64,n64.cpu.regs[opcode.rs]);
+    write_pc_delayed(n64,n64.cpu.regs[opcode.rs]);
 }
 
 void instr_break(N64& n64, const Opcode& opcode)

@@ -10,7 +10,7 @@ void instr_branch(N64& n64, const Opcode& opcode, FUNC func)
     {
         const auto target = compute_branch_addr(n64.cpu.pc,opcode.imm);
 
-        write_pc(n64,target);
+        write_pc_delayed(n64,target);
     }
 }
 
@@ -21,7 +21,7 @@ void instr_branch_likely(N64& n64, const Opcode& opcode, FUNC func)
     {
         const auto target = compute_branch_addr(n64.cpu.pc,opcode.imm);
 
-        write_pc(n64,target);
+        write_pc_delayed(n64,target);
     }
 
     // skip delay slot
@@ -190,7 +190,7 @@ void instr_j(N64 &n64, const Opcode &opcode)
 {
     const auto target = get_target(opcode.op,n64.cpu.pc);
 
-    write_pc(n64,target);
+    write_pc_delayed(n64,target);
 }
 
 
