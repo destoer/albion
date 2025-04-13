@@ -46,7 +46,7 @@ b32 Debug::breakpoint_hit_internal(u64 addr, u64 value, break_type type)
 
         if(breakpoints_enabled && !b.watch)
         {
-            print_console("[{:x}]:{} breakpoint hit at {:x}:{:x}\n",read_pc(),u32(type),addr,value);
+            print_console("[{:x}]: {} breakpoint hit at {:x}:{:x}\n",read_pc(),u32(type),addr,value);
         }
 
         // this is a watchpoint we just want to print to the console
@@ -54,7 +54,7 @@ b32 Debug::breakpoint_hit_internal(u64 addr, u64 value, break_type type)
         else if(watchpoints_enabled && b.watch)
         {
             //print_watchpoint(b);
-            print_console("[{:x}]:{} watch hit at {:x}:{:x}\n",read_pc(),u32(type),addr,value);
+            print_console("[{:x}]: {} watch hit at {:x}:{:x}\n",read_pc(),u32(type),addr,value);
             return false;
         }
     }
@@ -727,7 +727,7 @@ b32 Debug::invalid_command(const std::vector<Token>& args)
 
 void Debug::debug_input()
 {
-    print_console("break at {:16x}\n",read_pc());
+    print_console("break into debugger at {:016x}\n",read_pc());
     on_break();
     
     std::string line = "";

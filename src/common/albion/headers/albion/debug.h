@@ -111,22 +111,6 @@ public:
     ~Debug();
     
     template<typename... Args>
-    void write_logger(std::string x,Args... args)
-    {
-
-        if(log_enabled)
-        {
-            auto str = fmt::vformat(x,fmt::make_format_args(args...));
-            log_file << str << "\n";
-            log_file.flush();
-            #ifdef LOG_CONSOLE
-            std::cout << str << "\n";
-            #endif
-        }
-    }
-
-
-    template<typename... Args>
     void print_console(std::string x,Args... args)
     {
         // assume SDL for now
@@ -219,8 +203,3 @@ public:
     virtual u8 read_mem(u64 addr) = 0;
     virtual void write_mem(u64 addr, u8 v) = 0;
 };
-
-
-
-//----- logger macro definition ---
-#define write_log(X,...) (X).write_logger(__VA_ARGS__)

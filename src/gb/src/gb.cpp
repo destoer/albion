@@ -66,7 +66,7 @@ try
 catch(std::exception &ex)
 {
 	std::string err = fmt::format("failed to save state: {}",ex.what());
-	debug.write_logger(err);
+	spdlog::error("{}",err);
 	throw std::runtime_error(err);
 }
 }
@@ -99,7 +99,7 @@ catch(std::exception &ex)
 	// put system back into a safe state
 	reset("",false,false);
 	std::string err = fmt::format("failed to load state: {}",ex.what());
-	debug.write_logger(err);
+	spdlog::error("{}",err);
 	throw std::runtime_error(err);
 }
 

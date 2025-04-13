@@ -50,6 +50,7 @@ void reset_cpu(N64 &n64)
     cpu.cop1 = {};
 
     cpu.pc = 0xA4000040;
+    cpu.pc_fetch = cpu.pc;
     cpu.pc_next = cpu.pc + 4; 
 
     insert_count_event(n64);
@@ -90,10 +91,10 @@ void step(N64 &n64)
 
     if constexpr(debug)
     {
-        if(n64.debug.breakpoint_hit(u32(n64.cpu.pc),op,break_type::execute))
+        if(n64.debug.breakpoint_hit(u32(pc_phys_addr),op,break_type::execute))
         {
             // halt until told otherwhise :)
-            write_log(n64.debug,"[DEBUG] execute breakpoint hit ({:x}:{:x})",n64.cpu.pc,op);
+            n64.debug.print_console("[DEBUG] execute breakpoint hit ({:x}:{:x})\n",n64.cpu.pc,op);
             n64.debug.halt();
             return;
         }

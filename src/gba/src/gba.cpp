@@ -27,7 +27,7 @@ void GBA::reset(std::string filename)
     disp.init();
 	apu.init();
     cpu.init();
-	write_log(debug,"[new gba instance] {}",filename);
+	spdlog::info("[new gba instance] {}",filename);
 	throttle_emu = true;
 }
 

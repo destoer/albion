@@ -1355,7 +1355,7 @@ access_type Mem::read_memt(u32 addr)
 
     if(debug.breakpoint_hit(addr,v,break_type::read))
     {
-        write_log(debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,cpu.pc_actual);
+        debug.print_console("read breakpoint hit at {:08x}:{:08x}:{:08x}\n",addr,v,cpu.pc_actual);
         debug.halt();
     }
 
@@ -1643,7 +1643,7 @@ void Mem::write_memt(u32 addr,access_type v)
 {
     if(debug.breakpoint_hit(addr,v,break_type::write))
     {
-        write_log(debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,cpu.pc_actual);
+        debug.print_console("write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,cpu.pc_actual);
         debug.halt();
     }   
 

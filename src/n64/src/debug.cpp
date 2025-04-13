@@ -157,7 +157,7 @@ void N64Debug::disass_func(const std::vector<Token> &args)
 
 void N64Debug::on_break()
 {
-    print_func_disass(n64,n64.cpu.pc);
+    print_func_disass(n64,n64.cpu.pc_fetch);
 }
 
 }

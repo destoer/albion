@@ -17,7 +17,7 @@ bool Cpu::get_double() const
 
 void Cpu::init(bool use_bios)
 {
-	write_log(debug,"[INFO] new instance started!");
+	spdlog::info("new instance started!");
 
 
 	is_cgb = mem.rom_cgb_enabled();
@@ -449,7 +449,7 @@ void Cpu::handle_halt()
 	// needs to be improved to check for specific intrs being unable to fire...
 	if( mem.io[IO_IE] == 0)
 	{
-		write_log(debug,"[ERROR] halt infinite loop");
+		spdlog::error("halt infinite loop");
 		throw std::runtime_error("halt infinite loop");
 	}
 

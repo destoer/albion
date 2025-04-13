@@ -16,7 +16,7 @@ void Cpu::exec_instr_debug()
 	if(debug.breakpoint_hit(pc,x,break_type::execute))
 	{
 		// halt until told otherwhise :)
-		write_log(debug,"[DEBUG] execute breakpoint hit ({:x}:{:x})",pc,x);
+		debug.print_console("execute breakpoint hit ({:x}:{:x})\n",pc,x);
 		debug.halt();
 		return;
 	}
@@ -303,14 +303,14 @@ bool Cpu::cond()
 void Cpu::undefined_opcode()
 {
 	const auto str = fmt::format("[ERROR] invalid opcode {:x} at {:x}:{}",mem.read_mem(pc-1),pc-1,disass.disass_op(pc-1));
-	write_log(debug,str);
+	spdlog::error("{}",str);
 	throw std::runtime_error(str);		
 }
 
 void Cpu::undefined_opcode_cb()
 {
 	const auto str = fmt::format("[ERROR] invalid cb opcode {:x} at {:x}:{}",mem.read_mem(pc-1),pc-2,disass.disass_op(pc-2));
-	write_log(debug,str);
+	spdlog::error("{}",str);
 	throw std::runtime_error(str);		
 }
 
@@ -916,7 +916,7 @@ void Cpu::stop()
 	
 	else // almost nothing triggers this 
 	{
-		write_log(debug,"[WARNING] stop opcode hit at {:x}",pc);
+		spdlog::warn("[WARNING] stop opcode hit at {:x}",pc);
 	}
 }
 
@@ -977,7 +977,7 @@ void Cpu::rst()
 		// if oam dma is active then we there is a chance this wont loop
 		if(!mem.oam_dma_active)
 		{
-			write_log(debug,"[ERROR] rst infinite loop at {:x}->{:x}",pc,ADDR);
+			spdlog::error("rst infinite loop at {:x}->{:x}",pc,ADDR);
 			throw std::runtime_error("infinite rst lockup");
 		}
 	}

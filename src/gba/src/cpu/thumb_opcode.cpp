@@ -160,7 +160,7 @@ void Cpu::thumb_swi(u16 opcode)
 
     // nn is ignored by hardware
     UNUSED(opcode);
-    write_log(debug,"[cpu-thumb: {:08x}] swi {:x}",regs[PC],opcode & 0xff);
+    spdlog::trace("[cpu-thumb: {:08x}] swi {:x}",regs[PC],opcode & 0xff);
 
     const auto idx = static_cast<int>(cpu_mode::supervisor);
 
@@ -740,7 +740,7 @@ void Cpu::thumb_long_bl(u16 opcode)
         write_pc((regs[LR] + (offset << 1)));
         // lr = tmp | 1
         regs[LR] = tmp | 1;
-        write_log(debug,"[cpu-thumb {:08x}] call {:08x}",tmp,pc_actual);
+        spdlog::trace("[cpu-thumb {:08x}] call {:08x}",tmp,pc_actual);
         //printf("[%08x] call %08x\n",tmp,pc_actual);
     }
 }

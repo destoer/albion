@@ -630,7 +630,7 @@ u8 Memory::read_mem_debug(u16 addr) const noexcept
 	if(debug.breakpoint_hit(addr,value,break_type::read))
 	{
 		// halt until told otherwhise :)
-		write_log(debug,"[DEBUG] read breakpoint hit ({:x}:{:x})",addr,value);
+		debug.print_console("read breakpoint hit ({:x}:{:x})",addr,value);
 		debug.halt();
 	}
 	return value;
@@ -655,7 +655,7 @@ void Memory::write_mem_debug(u16 addr, u8 v) noexcept
 	if(debug.breakpoint_hit(addr,v,break_type::write))
 	{
 		// halt until told otherwhise :)
-		write_log(debug,"[DEBUG] write breakpoint hit ({:x}:{:})",addr,v);
+		debug.print_console("write breakpoint hit ({:x}:{:})",addr,v);
 		debug.halt();
 	}
 
@@ -1175,7 +1175,7 @@ u8 Memory::read_iot_debug(u16 addr) noexcept
 	if(debug.breakpoint_hit(addr,value,break_type::read))
 	{
 		// halt until told otherwhise :)
-		write_log(debug,"[DEBUG] read breakpoint hit ({:x}:{:x})",addr,value);
+		debug.print_console("read breakpoint hit ({:x}:{:x})",addr,value);
 		debug.halt();
 	}
 	return value;	
@@ -2315,7 +2315,7 @@ void Memory::write_iot_debug(u16 addr, u8 v) noexcept
 	if(debug.breakpoint_hit(addr,v,break_type::write))
 	{
 		// halt until told otherwhise :)
-		write_log(debug,"[DEBUG] write breakpoint hit ({:x}:{:})",addr,v);
+		debug.print_console("write breakpoint hit ({:x}:{:})",addr,v);
 		debug.halt();
 	}
 

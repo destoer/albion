@@ -223,7 +223,7 @@ void Cpu::exec_instr_debug()
 	if(debug.breakpoint_hit(pc,v,break_type::execute))
 	{
 		// halt until told otherwhise :)
-		write_log(debug,"[DEBUG] execute breakpoint hit ({:x}:{:x})",pc,v);
+		debug.print_console("execute breakpoint hit ({:x}:{:x})\n",pc,v);
 		debug.halt();
         return;
 	}
@@ -623,7 +623,7 @@ void Cpu::service_interrupt()
     switch_execution_state(false); // switch to arm mode
     cpsr = set_bit(cpsr,7); //set the irq bit to mask interrupts
 
-    write_log(debug,"[irq {:08x}] interrupt flag: {:02x} ",pc_actual,cpu_io.interrupt_flag);
+    spdlog::trace("[irq {:08x}] interrupt flag: {:02x} ",pc_actual,cpu_io.interrupt_flag);
 
     //internal_cycle();
 

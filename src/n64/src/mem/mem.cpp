@@ -242,7 +242,7 @@ void write_physical_debug(N64 &n64, u32 addr, access_type v)
     {
         if(n64.debug.breakpoint_hit(addr,v,break_type::write))
         {
-            write_log(n64.debug,"write breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
+            n64.debug.print_console("write breakpoint hit at {:08x}:{:08x}:{:08x}\n",addr,v,n64.cpu.pc_fetch);
             n64.debug.halt();
         }
     }
@@ -275,7 +275,7 @@ access_type read_physical_debug(N64 &n64, u32 addr)
     {
         if(n64.debug.breakpoint_hit(addr,v,break_type::read))
         {
-            write_log(n64.debug,"read breakpoint hit at {:08x}:{:08x}:{:08x}",addr,v,n64.cpu.pc);
+            n64.debug.print_console("read breakpoint hit at {:08x}:{:08x}:{:08x}\n",addr,v,n64.cpu.pc_fetch);
             n64.debug.halt();
         }
     }
