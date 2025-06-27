@@ -111,6 +111,7 @@ struct Ppu
     mask_mode mask_en;
 
     Cpu &cpu;
+    Debug& debug;
     Memory &mem;
     GameboyScheduler &scheduler;    
 

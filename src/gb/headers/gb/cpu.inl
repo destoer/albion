@@ -41,44 +41,50 @@ inline void Cpu::cycle_tick_t(u32 cycles) noexcept
 }
 
 
+template<bool DEBUG_ENABLE>
 inline void Cpu::write_stackt(u8 v) noexcept
 {
 	oam_bug_write(sp);
 	// need to ignore oam triggers for this one
-	mem.write_memt_no_oam_bug(--sp,v); // write to stack
+	mem.write_memt_no_oam_bug<DEBUG_ENABLE>(--sp,v); // write to stack
 }
 
 
+template<bool DEBUG_ENABLE>
 inline void Cpu::write_stackwt(uint16_t v) noexcept
 {	
-	write_stackt((v & 0xff00) >> 8);
-	write_stackt((v & 0x00ff));
+	write_stackt<DEBUG_ENABLE>((v & 0xff00) >> 8);
+	write_stackt<DEBUG_ENABLE>((v & 0x00ff));
 }
 
 // unticked only used by interrupts
+template<bool DEBUG_ENABLE>
 inline void Cpu::write_stack(u8 v) noexcept
 {
-	mem.write_mem(--sp,v); // write to stack
+	mem.write_mem<DEBUG_ENABLE>(--sp,v); // write to stack
 }
 
+template<bool DEBUG_ENABLE>
 inline void Cpu::write_stackw(uint16_t v) noexcept
 {
-	write_stack((v & 0xff00) >> 8);
-	write_stack((v & 0x00ff));
+	write_stack<DEBUG_ENABLE>((v & 0xff00) >> 8);
+	write_stack<DEBUG_ENABLE>((v & 0x00ff));
 }
 
+template<bool DEBUG_ENABLE>
 inline u8 Cpu::read_stackt() noexcept
 {	
-	return mem.read_memt_no_oam_bug(sp++);
+	return mem.read_memt_no_oam_bug<DEBUG_ENABLE>(sp++);
 }
 
+template<bool DEBUG_ENABLE>
 inline uint16_t Cpu::read_stackwt() noexcept
 {
 	oam_bug_read_increment(sp);
-	const auto v1 = read_stackt();
+	const auto v1 = read_stackt<DEBUG_ENABLE>();
 
 	oam_bug_read(sp);
-	const auto v2 = read_stackt(); 
+	const auto v2 = read_stackt<DEBUG_ENABLE>(); 
 
 	return v1 | v2 << 8;
 }

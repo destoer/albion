@@ -8,7 +8,7 @@
 namespace gameboy
 {
 
-Ppu::Ppu(GB &gb) : cpu(gb.cpu), mem(gb.mem),scheduler(gb.scheduler) 
+Ppu::Ppu(GB &gb) : cpu(gb.cpu), debug(gb.debug), mem(gb.mem),scheduler(gb.scheduler) 
 {
 	screen.resize(SCREEN_WIDTH*SCREEN_HEIGHT);
 	rendered.resize(SCREEN_WIDTH*SCREEN_HEIGHT);
@@ -370,7 +370,15 @@ void Ppu::switch_hblank() noexcept
 	// on cgb do hdma (handler will check if its active)
 	if(cpu.is_cgb)
 	{
-		mem.do_hdma();
+		if(debug.breakpoints_enabled)
+		{
+			mem.do_hdma<true>();
+		}
+
+		else
+		{
+			mem.do_hdma<false>();
+		}
 	}
 
 	// if we draw the window at all this line 

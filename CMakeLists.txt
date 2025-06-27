@@ -15,11 +15,11 @@ set(FRONTEND "SDL")
 # external frontend
 
 include("thirdparty/spdlog.cmake")
-include("thirdparty/sdl3.cmake")
+# include("thirdparty/sdl3.cmake")
 
-# set(GB "TRUE")
+ set(GB "TRUE")
 # set(GBA "TRUE")
-set(N64 "TRUE")
+# set(N64 "TRUE")
 
 # add_compile_options(-fsanitize=undefined)
 # add_link_options(-fsanitize=undefined)
@@ -63,7 +63,7 @@ else()
 	# prevent O3 being injected
 	SET( CMAKE_CXX_FLAGS_DEBUG  "")
 	SET( CMAKE_CXX_FLAGS_RELEASE  "")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -march=native -pthread -O1 -fomit-frame-pointer -Wno-missing-braces")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -march=native -pthread -O1 -fomit-frame-pointer -Wno-missing-braces -fmax-errors=15")
 endif()
 
 add_subdirectory("destoer-lib")
@@ -89,4 +89,4 @@ if(DEFINED GB)
 	target_link_libraries(albion PUBLIC gb)
 endif()
 
-target_link_libraries(albion PRIVATE destoer spdlog::spdlog SDL3::SDL3-static)
+target_link_libraries(albion PRIVATE destoer spdlog::spdlog SDL3)

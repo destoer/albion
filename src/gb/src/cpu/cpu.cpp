@@ -113,11 +113,15 @@ void Cpu::update_intr_fire() noexcept
 	interrupt_fire = interrupt_req && interrupt_enable;
 }
 
+template u8 Cpu::fetch_opcode<true>() noexcept;
+template u8 Cpu::fetch_opcode<false>() noexcept;
+
+template<bool DEBUG_ENABLE>
 u8 Cpu::fetch_opcode() noexcept
 {
 	// need to fetch this before we do the tick
 	// just incase we are executing from somewhere volatile
-	const auto opcode = mem.read_mem(pc);
+	const auto opcode = mem.read_mem<DEBUG_ENABLE>(pc);
 
 	// at midpoint of instr fetch interrupts are checked
 	// and if so the opcode is thrown away and interrupt dispatch started
@@ -134,10 +138,10 @@ u8 Cpu::fetch_opcode() noexcept
 		// pc will get decremented triggering oam bug
 		// dont know how this plays with halt bug
 		oam_bug_write(pc);
-		do_interrupts();
+		do_interrupts<DEBUG_ENABLE>();
 
 		// have to re fetch the opcode this costs a cycle
-		const auto v = mem.read_memt(pc);
+		const auto v = mem.read_memt<DEBUG_ENABLE>(pc);
 
 		// if halt bug occurs pc fails to increment for one instr
 		pc = pc + (1 - halt_bug);
@@ -497,7 +501,7 @@ void Cpu::request_interrupt(int interrupt) noexcept
 	update_intr_req();
 }
 
-
+template<bool DEBUG_ENABLE>
 void Cpu::do_interrupts() noexcept
 {
 	const u16 source = pc;
@@ -511,7 +515,7 @@ void Cpu::do_interrupts() noexcept
 	cycle_tick(2);
 
 	// first sp push on 4th cycle
-	write_stackt((pc & 0xff00) >> 8);
+	write_stackt<DEBUG_ENABLE>((pc & 0xff00) >> 8);
 
 	// 5th cycle in middle of stack push ie and if are checked to  get the 
 	// fired interrupt
@@ -521,7 +525,7 @@ void Cpu::do_interrupts() noexcept
 	cycle_tick_t(2);
 
 	oam_bug_write(pc);
-	write_stack(pc & 0xff);
+	write_stack<DEBUG_ENABLE>(pc & 0xff);
 
 	// 6th cycle the opcode prefetch will happen
 	// we handle this after this function

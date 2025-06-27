@@ -255,7 +255,7 @@ u32 read_sp_regs(N64& n64, u64 addr)
         default:
         {
             unimplemented("read_mem: sp regs %8x\n",addr);
-            //return 0;
+            return 0;
         }
     }    
 }

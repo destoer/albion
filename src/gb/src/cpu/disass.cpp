@@ -697,11 +697,11 @@ bool Disass::get_symbol(u16 addr,std::string &sym)
 // and having a bunch of extra bytes in the exe
 u32 Disass::get_op_sz(u16 addr) noexcept
 {
-    u8 opcode = mem.read_mem(addr++);
+    u8 opcode = mem.read_mem<false>(addr++);
 
     bool is_cb = opcode == 0xcb;
 
-    disass_type type = is_cb ? cb_opcode_table[mem.read_mem(addr)].type : opcode_table[opcode].type;
+    disass_type type = is_cb ? cb_opcode_table[mem.read_mem<false>(addr)].type : opcode_table[opcode].type;
 
     int size = is_cb?  1 : 0; // 1 byte prefix for cb
 
@@ -713,12 +713,12 @@ u32 Disass::get_op_sz(u16 addr) noexcept
 std::string Disass::disass_op(u16 addr) noexcept
 {
 
-    u8 opcode = mem.read_mem(addr++);
+    u8 opcode = mem.read_mem<false>(addr++);
 
     
     if(opcode == 0xcb)
     {
-        opcode = mem.read_mem(addr);
+        opcode = mem.read_mem<false>(addr);
         Disass_entry entry = cb_opcode_table[opcode];
         return std::string(entry.fmt_str);
     }
@@ -733,7 +733,7 @@ std::string Disass::disass_op(u16 addr) noexcept
             // eg jp
             case disass_type::op_u16:
             {
-                const auto v = mem.read_word(addr);
+                const auto v = mem.read_word<false>(addr);
                 std::string symbol = "";
 
                 if(get_symbol(v,symbol))
@@ -752,7 +752,7 @@ std::string Disass::disass_op(u16 addr) noexcept
             case disass_type::op_u8:
             {
                 std::string symbol = "";
-                const auto v = mem.read_mem(addr);
+                const auto v = mem.read_mem<false>(addr);
 
                 //  ld a, (ff00+xx)
                 if(opcode == 0xf0 && get_symbol(0xff00+v,symbol)) 
@@ -775,7 +775,7 @@ std::string Disass::disass_op(u16 addr) noexcept
             // eg jr
             case disass_type::op_i8:
             {
-                const auto operand = static_cast<int8_t>(mem.read_mem(addr++));
+                const auto operand = static_cast<int8_t>(mem.read_mem<false>(addr++));
                 const u16 v = addr+operand;
                 std::string symbol = "";
                 if(get_symbol(v,symbol))
