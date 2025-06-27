@@ -35,9 +35,9 @@ void GB::reset(std::string rom_name, bool with_rom, bool use_bios)
 
 void GB::change_breakpoint_enable(bool enabled)
 {
-	mem.change_breakpoint_enable(enabled);
-	cpu.change_breakpoint_enable(enabled);
 	debug.breakpoints_enabled = enabled;
+
+	mem.change_breakpoint_enable(enabled);
 }
 
 // need to do alot more integrity checking on data in these :)
@@ -190,18 +190,30 @@ void GB::run()
     ppu.new_vblank = false;
 	cpu.cycle_frame = false;
 	cpu.insert_new_cycle_event();
+
 	if(debug.is_halted())
 	{
 		return;
 	}
 
-	// break out early if we have hit a debug event
-	while(!cpu.cycle_frame) 
-    {
-		cpu.exec_instr();
-		if(debug.is_halted())
+	if(debug.breakpoints_enabled)
+	{
+		// break out early if we have hit a debug event
+		while(!cpu.cycle_frame) 
 		{
-			return;
+			cpu.exec_instr<true>();
+			if(debug.is_halted())
+			{
+				return;
+			}
+		}
+	}
+
+	else
+	{
+		while(!cpu.cycle_frame) 
+		{
+			cpu.exec_instr<false>();
 		}
 	}
 

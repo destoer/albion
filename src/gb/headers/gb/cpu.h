@@ -39,16 +39,11 @@ struct Cpu final
     void init(bool use_bios = false);
 
 
-    EXEC_INSTR_FPTR exec_instr_fptr;
+    template<bool DEBUG_ENABLE>
+    void dispatch_instr();
 
-    inline void exec_instr()
-    {
-        exec_instr_debug();
-    }
-
-    void exec_instr_debug();
-    void exec_instr_no_debug();
-
+    template<bool DEBUG_ENABLE>
+    void exec_instr();
 
     void cycle_tick(u32 cycles) noexcept; 
     void cycle_tick_t(u32 cycles) noexcept;
@@ -148,19 +143,6 @@ struct Cpu final
     void save_state(std::ofstream &fp);
     void load_state(std::ifstream &fp);
 
-    void change_breakpoint_enable(bool enabled) noexcept
-    {
-        if(enabled)
-        {
-            exec_instr_fptr = &Cpu::exec_instr_debug;         
-        }
-
-        else
-        {
-            exec_instr_fptr = &Cpu::exec_instr_no_debug; 
-        }
-    }
-
     Memory &mem;
     Apu &apu;
     Ppu &ppu;
@@ -212,9 +194,11 @@ struct Cpu final
 
     void switch_double_speed() noexcept;
 
+    template<bool DEBUG_ENABLE>
     u8 fetch_opcode() noexcept;
 
     // interrupts
+    template<bool DEBUG_ENABLE>
     void do_interrupts() noexcept;
 
     // instr helpers
@@ -222,7 +206,7 @@ struct Cpu final
     template<const int REG>
     void write_r16_group1(u16 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void write_r8(u8 v);
 
     template<const int REG>
@@ -240,7 +224,7 @@ struct Cpu final
     template<const int REG>
     u16 read_r16_group2();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     u8 read_r8();
 
 
@@ -249,111 +233,133 @@ struct Cpu final
 
     void undefined_opcode();
     void undefined_opcode_cb();
+
+    template<bool DEBUG_ENABLE>
     void ld_u16_sp();
     void nop();
+
+    template<bool DEBUG_ENABLE>
     void jp();
     void di();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void ld_r16_u16();
 
+    template<bool DEBUG_ENABLE>
     void ld_u16_a();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void ld_r8_u8();
 
+    template<bool DEBUG_ENABLE>
     void ld_ffu8_a();
+
+    template<bool DEBUG_ENABLE>
     void call();
     void halt();
 
-    template<const int DST, const int SRC>
+    template<const int DST, const int SRC, bool DEBUG_ENABLE>
     void ld_r8_r8();
 
+    template<bool DEBUG_ENABLE>
     void jr();
+
+    template<bool DEBUG_ENABLE>
     void ret();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void push();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void pop();
 
     template<const int REG>
     void inc_r16();
 
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void ld_a_r16();
 
     void set_zero(u8 v);
 
     void instr_or(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void or_r8();
 
-    template<const int COND>
+    template<const int COND, bool DEBUG_ENABLE>
     void jr_cond();
 
+    template<bool DEBUG_ENABLE>
     void ld_a_ffu8();
 
     void instr_cp(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void cp_r8();
 
+    template<bool DEBUG_ENABLE>
     void cp_u8();
+
+    template<bool DEBUG_ENABLE>
     void or_u8();
+
+    template<bool DEBUG_ENABLE>
     void ld_a_u16();
     void instr_and(u8 v);
+
+    template<bool DEBUG_ENABLE>
     void and_u8();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void and_r8();
 
-    template<const int COND>
+    template<const int COND, bool DEBUG_ENABLE>
     void call_cond();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void dec_r8();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void inc_r8();
 
     void instr_xor(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void xor_r8();
 
+    template<bool DEBUG_ENABLE>
     void xor_u8();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void ld_r16_a();
 
     void instr_add(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void add_r8();
 
+    template<bool DEBUG_ENABLE>
     void add_u8();
-
 
     void instr_sub(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void sub_r8();
 
+    template<bool DEBUG_ENABLE>
     void sub_u8();
 
 
     void instr_adc(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void adc_r8();
 
+    template<bool DEBUG_ENABLE>
     void adc_u8();
 
-    template<const int COND>
+    template<const int COND, bool DEBUG_ENABLE>
     void ret_cond();
 
     template<const int REG>
@@ -361,15 +367,18 @@ struct Cpu final
 
     void jp_hl();
 
-    template<const int COND>
+    template<const int COND, bool DEBUG_ENABLE>
     void jp_cond();
 
     u16 instr_addi(int8_t v);
+
+    template<bool DEBUG_ENABLE>
     void ld_hl_sp_i8();
     void daa();
 
     void ld_sp_hl();
 
+    template<bool DEBUG_ENABLE>
     void ei();
 
     void stop();
@@ -377,22 +386,28 @@ struct Cpu final
     template<const int REG>
     void dec_r16();
 
+    template<bool DEBUG_ENABLE>
     void add_sp_i8();
 
 
     void instr_sbc(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void sbc_r8();
 
+    template<bool DEBUG_ENABLE>
     void sbc_u8();
 
+    template<bool DEBUG_ENABLE>
     void reti();
 
-    template<const int ADDR, const int OP>
+    template<const int ADDR, const int OP, bool DEBUG_ENABLE>
     void rst();
 
+    template<bool DEBUG_ENABLE>
     void ld_a_ff00_c();
+
+    template<bool DEBUG_ENABLE>
     void ld_ff00_c_a();
 
     void cpl();
@@ -401,64 +416,77 @@ struct Cpu final
 
     // cb ops
 
+    template<bool DEBUG_ENABLE>
     void cb_opcode();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void srl();
 
     u8 instr_rrc(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void rrc_r8();
 
     void rrca();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void rr_r8();
     
     u8 instr_rr(u8 v);
     void rra();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void instr_swap();
 
     u8 instr_rlc(u8 v);
     void rlca();
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void rlc_r8();
 
 
     u8 instr_rl(u8 v);
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void rl_r8();
 
     void rla();
 
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void sla_r8();
 
 
-    template<const int REG>
+    template<const int REG, bool DEBUG_ENABLE>
     void sra_r8();
 
-    template<const int REG, const int BIT>
+    template<const int REG, const int BIT, bool DEBUG_ENABLE>
     void bit_r8();
 
-    template<const int REG, const int BIT>
+    template<const int REG, const int BIT, bool DEBUG_ENABLE>
     void res_r8();
 
-    template<const int REG, const int BIT>
+    template<const int REG, const int BIT, bool DEBUG_ENABLE>
     void set_r8();
 
     // stack helpers
+
+    template<bool DEBUG_ENABLE>
     u8 read_stackt() noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_stackt(u8 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
     u16 read_stackwt() noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_stackwt(u16 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_stackw(u16 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_stack(u8 v) noexcept;
 
 
@@ -466,4 +494,8 @@ struct Cpu final
     u32 get_cur_oam_row() const;
     bool oam_should_corrupt(u16 v) const noexcept;
 };
+
+extern template u8 Cpu::fetch_opcode<true>() noexcept;
+extern template u8 Cpu::fetch_opcode<false>() noexcept;
+
 }

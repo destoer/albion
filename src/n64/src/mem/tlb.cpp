@@ -83,7 +83,7 @@ std::optional<u64> translate_vaddr(N64& n64, u64 addr, tlb_access access) {
             const u32 page_mask = entry.page_mask << 12;
             const u32 page_offset = addr & (page_mask | 0xfff);
             const u32 translated_addr = ((entry_lo.pfn << 12) & ~page_mask) | page_offset;
-            spdlog::debug("Translated addr to {:x} from {:x} ({:x})",translated_addr,addr,page_mask);
+            spdlog::trace("Translated addr to {:x} from {:x} ({:x})",translated_addr,addr,page_mask);
             return translated_addr;
         }
     }

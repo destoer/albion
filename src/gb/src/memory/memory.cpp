@@ -8,6 +8,13 @@
 namespace gameboy
 {
 
+template void Memory::write_io<false>(u16 addr,u8 v) noexcept;
+template void Memory::write_io<true>(u16 addr,u8 v) noexcept;
+
+void Memory::tick_access()
+{
+	cpu.cycle_tick(1);
+}
 
 bool Memory::is_lcd_enabled() const noexcept
 {
@@ -101,6 +108,19 @@ Memory::Memory(GB &gb) : cpu(gb.cpu), ppu(gb.ppu),
 	sgb_pal.resize(0x1000);
 } 
 
+void Memory::change_breakpoint_enable(bool enabled)
+{
+	if(enabled)
+	{
+		memory_table[0xf].write_memf = &Memory::write_hram<true>;
+	}
+
+	else
+	{
+		memory_table[0xf].write_memf = &Memory::write_hram<false>;
+	}
+}
+
 void Memory::init_mem_table() noexcept
 {
 	memory_table[0x8].read_memf = &Memory::read_vram;
@@ -130,7 +150,8 @@ void Memory::init_mem_table() noexcept
 	memory_table[0xc].write_memf = &Memory::write_wram_low;
 	memory_table[0xd].write_memf = &Memory::write_wram_high;
 	memory_table[0xe].write_memf = &Memory::write_wram_low;
-	memory_table[0xf].write_memf = &Memory::write_hram;	
+
+	change_breakpoint_enable(debug.breakpoints_enabled);
 }
 
 void Memory::init_banking_table() noexcept
@@ -500,7 +521,7 @@ void Memory::raw_write(u16 addr, u8 v) noexcept
 			// io regs
 			if(addr >= 0xff00)
 			{
-				write_io(addr,v);
+				write_io<false>(addr,v);
 			}
 
 			// high wram mirror
@@ -622,110 +643,6 @@ u8 Memory::raw_read(u16 addr) const noexcept
 
 
 // public access functions
-
-// read mem
-u8 Memory::read_mem_debug(u16 addr) const noexcept
-{
-	const u8 value = read_mem_no_debug(addr);
-	if(debug.breakpoint_hit(addr,value,break_type::read))
-	{
-		// halt until told otherwhise :)
-		debug.print_console("read breakpoint hit ({:x}:{:x})",addr,value);
-		debug.halt();
-	}
-	return value;
-}
-
-u8 Memory::read_mem_no_debug(u16 addr) const noexcept
-{
-	const auto idx = (addr & 0xf000) >> 12;
-	if(page_table[idx] != nullptr)
-	{
-		const u8 *buf = page_table[idx] + (addr & 0xfff);
-		return *buf;
-	}
-	
-    return std::invoke(memory_table[idx].read_memf,this,addr);
-}
-
-
-// write_mem
-void Memory::write_mem_debug(u16 addr, u8 v) noexcept
-{
-	if(debug.breakpoint_hit(addr,v,break_type::write))
-	{
-		// halt until told otherwhise :)
-		debug.print_console("write breakpoint hit ({:x}:{:})",addr,v);
-		debug.halt();
-	}
-
-	write_mem_no_debug(addr,v);
-}
-
-void Memory::write_mem_no_debug(u16 addr, u8 v) noexcept
-{
-	std::invoke(memory_table[(addr & 0xf000) >> 12].write_memf,this,addr,v);	
-}
-
-
-u16 Memory::read_word(u16 addr) noexcept
-{
-    return read_mem(addr) | (read_mem(addr+1) << 8);
-}
-
-
-void Memory::write_word(u16 addr, u16 v) noexcept
-{
-    write_mem(addr+1,(v&0xff00)>>8);
-    write_mem(addr,(v&0x00ff));
-}
-
-// maybe should have an eqiv for optimisation purposes where we know it cant trigger
-u8 Memory::read_memt_no_oam_bug(u16 addr) noexcept
-{
-	ignore_oam_bug = true;
-	u8 v = read_mem(addr);
-	ignore_oam_bug = false;
-	cpu.cycle_tick(1); // tick for the memory access 
-    return v;
-}
-
-// memory accesses (timed)
-u8 Memory::read_memt(u16 addr) noexcept
-{
-    u8 v = read_mem(addr);
-	cpu.cycle_tick(1); // tick for the memory access 
-    return v;
-}
-
-void Memory::write_memt_no_oam_bug(u16 addr, u8 v) noexcept
-{
-	ignore_oam_bug = true;
-    write_mem(addr,v);
-	ignore_oam_bug = false;
-	cpu.cycle_tick(1); // tick for the memory access	
-}
-
-
-void Memory::write_memt(u16 addr, u8 v) noexcept
-{
-    write_mem(addr,v);
-	cpu.cycle_tick(1); // tick for the memory access
-}
-
-
-u16 Memory::read_wordt(u16 addr) noexcept
-{
-    return read_memt(addr) | (read_memt(addr+1) << 8);
-}
-
-
-void Memory::write_wordt(u16 addr, u16 v) noexcept
-{
-    write_memt(addr+1,(v&0xff00)>>8);
-    write_memt(addr,(v&0x00ff));
-}
-
 
 // read mem underyling
 // object attribute map 0xfe00 - 0xfe9f
@@ -1169,25 +1086,6 @@ u8 Memory::read_io(u16 addr) const noexcept
     }
 }
 
-u8 Memory::read_iot_debug(u16 addr) noexcept
-{
-	const u8 value = read_iot_no_debug(addr);
-	if(debug.breakpoint_hit(addr,value,break_type::read))
-	{
-		// halt until told otherwhise :)
-		debug.print_console("read breakpoint hit ({:x}:{:x})",addr,value);
-		debug.halt();
-	}
-	return value;	
-}
-
-u8 Memory::read_iot_no_debug(u16 addr) noexcept
-{
-	scheduler.service_events();
-    u8 v = read_io(addr);
-	cpu.cycle_tick(1); // tick for mem access
-    return v;
-}
 
 // for now we will just return the rom
 // 0x4000 - 0x8000 return current rom bank
@@ -1305,38 +1203,6 @@ void Memory::write_vram(u16 addr,u8 v) noexcept
 }
 
 
-void Memory::do_dma(u8 v) noexcept
-{
-	scheduler.service_events();
-	io[IO_DMA] = v; // write to the dma reg
-	u16 dma_address = v << 8;
-	// transfer is from 0xfe00 to 0xfea0
-			
-	/*// must be page aligned revisit later
-	if(dma_address % 0x100) return;		
-	*/
-
-	// source must be below 0xe000
-	// tick immediatly but keep the timing (not how hardware does it)
-	// technically a oam dma should delay a cycle before writing
-	if(dma_address < 0xe000)
-	{
-		oam_dma_disable();
-		for(int i = 0; i < 0xA0; i++)
-		{
-			oam[i] = read_mem(dma_address+i); 	
-		}
-		
-		oam_dma_address = dma_address; // the source address
-		oam_dma_index = 0; // how far along the dma transfer we are	
-
-		const auto event = scheduler.create_event((0xa0 * 4)+0x8,gameboy_event::oam_dma_end);
-		scheduler.insert(event,false);
-	
-		oam_dma_enable();
-	}
-}
-
 // this needs work
 void Memory::tick_dma(u32 cycles) noexcept
 {
@@ -1448,7 +1314,55 @@ void Memory::oam_dma_enable() noexcept
 
 }
 
+// wram zero bank 0xc000 - 0xd000
+void Memory::write_wram_low(u16 addr,u8 v) noexcept
+{
+    wram[addr&0xfff] = v;
+}
+
+// banked wram 0xd000 - 0xe000
+// also at 0xe000 - 0xfe00 in echo ram
+void Memory::write_wram_high(u16 addr,u8 v) noexcept
+{
+    cgb_wram_bank[cgb_wram_bank_idx][addr&0xfff] = v;
+}
+
+
+void Memory::frame_end()
+{
+	if(cart_ram_dirty)
+	{
+		if(++frame_count >= FRAME_SAVE_LIMIT)
+		{
+			save_cart_ram();
+			frame_count = 0;
+			cart_ram_dirty = false;
+		}
+	}
+}
+
+void Memory::write_cart_ram(u16 addr, u8 v) noexcept
+{
+    if(enable_ram && cart_ram_bank != CART_RAM_BANK_INVALID)
+    {
+        cart_ram_banks[cart_ram_bank][addr & 0x1fff] = v;
+		cart_ram_dirty = true;
+    }
+}
+
+// only bottom 4 bits are readable
+void Memory::write_cart_ram_mbc2(u16 addr, u8 v) noexcept
+{
+    if(enable_ram) // fixed for 512by4 bits
+    {
+        cart_ram_banks[0][addr & 0x1ff] = ((v & 0xf) | 0xf0);
+		cart_ram_dirty = true;
+    }
+}
+
+
 // io memory has side affects 0xff00
+template<bool DEBUG_ENABLE>
 void Memory::write_io(u16 addr,u8 v) noexcept
 {
     switch(addr & 0xff)
@@ -1528,9 +1442,6 @@ void Memory::write_io(u16 addr,u8 v) noexcept
 							{
 								const auto offset = is_set(io[IO_LCDC],4)?  0x0000 : 0x0800;
 								memcpy(&sgb_pal[0],&vram[0][offset],0x1000);
-
-								
-
 								break;
 							}
 
@@ -1828,7 +1739,7 @@ void Memory::write_io(u16 addr,u8 v) noexcept
 		// implement timing on dma and page boundary checking
 		case IO_DMA: // dma reg perform a dma transfer //<-- may need seperate handling in a do_dma
 		{
-			do_dma(v);
+			do_dma<DEBUG_ENABLE>(v);
 			break;
 		}
 
@@ -2019,7 +1930,7 @@ void Memory::write_io(u16 addr,u8 v) noexcept
 				// if data is 0 and there is no active hdma
 				if(!is_set(v,7) && !hdma_active) 
 				{
-					do_gdma();
+					do_gdma<DEBUG_ENABLE>();
 				}
 				
 				// writing 0 to bit 7 terminates a hdma transfer
@@ -2242,168 +2153,21 @@ void Memory::write_io(u16 addr,u8 v) noexcept
     }
 }
 
-
-void Memory::do_gdma() noexcept
+u8 Memory::read_mem_no_debug(u16 addr) const noexcept
 {
-	const u16 source = dma_src & 0xfff0;
-	
-	const u16 dest = (dma_dst & 0x1ff0) | 0x8000;
-	
-	// hdma5 stores how many 16 byte incremnts we have to transfer
-	const int len = ((io[IO_HDMA5] & 0x7f) + 1) * 0x10;
-
-	// 8 t cycles to xfer one 0x10 block
-	// (need to verify the timings on this!)
-
-	for(int i = 0; i < len; i += 2)
+	const auto idx = (addr & 0xf000) >> 12;
+	if(page_table[idx] != nullptr)
 	{
-		write_mem(dest+i,read_mem(source+i));
-		write_mem(dest+i+1,read_mem(source+i+1));
-		cpu.cycle_tick_t(1);
-	}
-
-	io[IO_HDMA5] = 0xff; // terminate the transfer
-}
-
-
-void Memory::do_hdma() noexcept
-{
-
-	if(!hdma_active)
-	{
-		return;
-	}
-
-	const u16 source = (dma_src & 0xfff0) + hdma_len_ticked*0x10;
-
-	const u16 dest = ((dma_dst & 0x1ff0) | 0x8000) + hdma_len_ticked*0x10;
-
-	/*if(!(source <= 0x7ff0 || ( source >= 0xa000 && source <= 0xdff0)))
-	{
-		printf("ILEGGAL HDMA SOURCE: %X!\n",source);
-		exit(1);
-	}
-	*/
-
-	// 8 t cycles to xfer one 0x10 block
-
-	// find out how many cycles we tick but for now just copy the whole damb thing 						
-	for(int i = 0; i < 0x10; i += 2)
-	{
-		write_mem(dest+i,read_mem(source+i));
-		write_mem(dest+i+1,read_mem(source+i+1));
-		cpu.cycle_tick_t(1);
+		const u8 *buf = page_table[idx] + (addr & 0xfff);
+		return *buf;
 	}
 	
-	// hdma is over 
-	if(--hdma_len <= 0)
-	{
-		// indicate the tranfser is over
-		io[IO_HDMA5] = 0xff;
-		hdma_active = false;
-	}
-
-	// goto next block
-	else
-	{
-		hdma_len_ticked++;
-	}	
+    return std::invoke(memory_table[idx].read_memf,this,addr);
 }
 
-void Memory::write_iot_debug(u16 addr, u8 v) noexcept
+void Memory::write_mem_no_debug(u16 addr, u8 v) noexcept
 {
-	if(debug.breakpoint_hit(addr,v,break_type::write))
-	{
-		// halt until told otherwhise :)
-		debug.print_console("write breakpoint hit ({:x}:{:})",addr,v);
-		debug.halt();
-	}
-
-	write_iot_no_debug(addr,v);	
+	std::invoke(memory_table[(addr & 0xf000) >> 12].write_memf,this,addr,v);	
 }
-
-void Memory::write_iot_no_debug(u16 addr,u8 v) noexcept
-{
-	scheduler.service_events();
-    write_io(addr,v);
-	cpu.cycle_tick(1); // tick for mem access
-}
-
-// wram zero bank 0xc000 - 0xd000
-void Memory::write_wram_low(u16 addr,u8 v) noexcept
-{
-    wram[addr&0xfff] = v;
-}
-
-// banked wram 0xd000 - 0xe000
-// also at 0xe000 - 0xfe00 in echo ram
-void Memory::write_wram_high(u16 addr,u8 v) noexcept
-{
-    cgb_wram_bank[cgb_wram_bank_idx][addr&0xfff] = v;
-}
-
-// high ram 0xf000
-// we bundle io into this but the hram section is at 0xff80-ffff
-void Memory::write_hram(u16 addr,u8 v) noexcept
-{
-	scheduler.service_events();
-    // io regs
-    if(addr >= 0xff00)
-    {
-        write_io(addr,v);
-    }
-
-    // high wram mirror
-    else if(addr >= 0xf000 && addr <= 0xfdff)
-    {
-        std::invoke(memory_table[0xd].write_memf,this,addr,v);
-    }
-
-	// oam is accesible during mode 0-1
-	else if(addr >= 0xfe00 && addr <= 0xfeff)
-	{
-		write_oam(addr,v);
-		return;
-	}
-
-
-    else // restricted
-    {
-
-    }
-}
-
-void Memory::frame_end()
-{
-	if(cart_ram_dirty)
-	{
-		if(++frame_count >= FRAME_SAVE_LIMIT)
-		{
-			save_cart_ram();
-			frame_count = 0;
-			cart_ram_dirty = false;
-		}
-	}
-}
-
-void Memory::write_cart_ram(u16 addr, u8 v) noexcept
-{
-    if(enable_ram && cart_ram_bank != CART_RAM_BANK_INVALID)
-    {
-        cart_ram_banks[cart_ram_bank][addr & 0x1fff] = v;
-		cart_ram_dirty = true;
-    }
-}
-
-// only bottom 4 bits are readable
-void Memory::write_cart_ram_mbc2(u16 addr, u8 v) noexcept
-{
-    if(enable_ram) // fixed for 512by4 bits
-    {
-        cart_ram_banks[0][addr & 0x1ff] = ((v & 0xf) | 0xf0);
-		cart_ram_dirty = true;
-    }
-}
-
 
 }

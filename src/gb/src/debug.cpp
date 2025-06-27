@@ -47,7 +47,7 @@ void GBDebug::regs(const std::vector<Token> &args)
 
 void GBDebug::step_internal()
 {
-    gb.cpu.exec_instr_no_debug();
+    gb.cpu.exec_instr<false>();
     halt();
 }
 

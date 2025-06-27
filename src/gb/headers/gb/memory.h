@@ -37,68 +37,51 @@ struct Memory final
     using READ_MEM_FPTR = u8 (Memory::*)(u16 addr) const noexcept;
     using READ_MEM_MUT_FPTR = u8 (Memory::*)(u16 addr) noexcept;
 
-    WRITE_MEM_FPTR write_mem_fptr;
-    READ_MEM_FPTR read_mem_fptr;
+    void tick_access();
 
-    WRITE_MEM_FPTR write_iot_fptr;
-    READ_MEM_MUT_FPTR read_iot_fptr;
-
-
-    void change_breakpoint_enable(bool enabled) noexcept
-    {
-        if(enabled)
-        {
-            write_mem_fptr = &Memory::write_mem_debug;
-            read_mem_fptr = &Memory::read_mem_debug;
-            write_iot_fptr = &Memory::write_iot_debug;
-            read_iot_fptr = &Memory::read_iot_debug;               
-        }
-
-        else
-        {
-            write_mem_fptr = &Memory::write_mem_no_debug;
-            read_mem_fptr = &Memory::read_mem_no_debug;
-            write_iot_fptr = &Memory::write_iot_no_debug;
-            read_iot_fptr = &Memory::read_iot_no_debug;
-        }
-    }
-
-
-    // public access functions
-    inline u8 read_mem(u16 addr) const noexcept
-    {
-        return std::invoke(read_mem_fptr,this,addr);
-    }
-
-    inline void write_mem(u16 addr, u8 v) noexcept
-    {
-        std::invoke(write_mem_fptr,this,addr,v);
-    }
-
-    u8 read_iot(u16 addr) noexcept
-    {
-        return std::invoke(read_iot_fptr,this,addr);
-    }
-
-    void write_iot(u16 addr,u8 v) noexcept
-    {
-       std::invoke(write_iot_fptr,this,addr,v);
-    }
-
-
+    template<bool DEBUG_ENABLE>
     u16 read_word(u16 addr) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_word(u16 addr, u16 v) noexcept;
-    u8 read_iot_no_debug(u16 addr) noexcept;
 
     // memory accesses (timed)
+    template<bool DEBUG_ENABLE>
     u8 read_memt(u16 addr) noexcept;
+
+    template<bool DEBUG_ENABLE>
     u8 read_memt_no_oam_bug(u16 addr) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_memt(u16 addr, u8 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_memt_no_oam_bug(u16 addr, u8 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
     u16 read_wordt(u16 addr) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_wordt(u16 addr, u16 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
     void write_io(u16 addr,u8 v) noexcept;
-    void write_iot_no_debug(u16 addr,u8 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
+    u8 read_mem(u16 addr) const noexcept;
+
+    template<bool DEBUG_ENABLE>
+    void write_mem(u16 addr, u8 v) noexcept;
+
+    template<bool DEBUG_ENABLE>
+    u8 read_iot(u16 addr) noexcept;
+
+    template<bool DEBUG_ENABLE>
+    void write_iot(u16 addr, u8 v) noexcept;
+
+    u8 read_mem_no_debug(u16 addr) const noexcept;
+    void write_mem_no_debug(u16 addr, u8 v) noexcept;
+
 
     // public underlying memory for direct access
     // required for handling io and vram
@@ -126,7 +109,10 @@ struct Memory final
     void save_state(std::ofstream &fp);
     void load_state(std::ifstream &fp);
 
+    template<bool DEBUG_ENABLE>
     void do_hdma() noexcept;
+
+    void change_breakpoint_enable(bool enabled);
 
 
     // serial tests
@@ -150,15 +136,7 @@ struct Memory final
     GameboyScheduler &scheduler;
     GBDebug &debug;
 
-
-    u8 read_mem_debug(u16 addr) const noexcept;
-    void write_mem_debug(u16 addr, u8 v) noexcept;
-    u8 read_iot_debug(u16 addr) noexcept;
-    void write_iot_debug(u16 addr, u8 v) noexcept;
-
-    u8 read_mem_no_debug(u16 addr) const noexcept;
-    void write_mem_no_debug(u16 addr, u8 v) noexcept;
-
+    template<bool DEBUG_ENABLE>
     void do_dma(u8 v) noexcept;
 
     void init_mem_table() noexcept;
@@ -180,6 +158,7 @@ struct Memory final
     void write_vram(u16 addr,u8 v) noexcept;
     void write_wram_low(u16 addr,u8 v) noexcept;
     void write_wram_high(u16 addr,u8 v) noexcept;
+    template<bool DEBUG_ENABLE>
     void write_hram(u16 addr,u8 v) noexcept;
     void write_cart_ram(u16 addr, u8 v) noexcept;
 
@@ -225,6 +204,7 @@ struct Memory final
 
 
     // cgb
+    template<bool DEBUG_ENABLE>
     void do_gdma() noexcept;
     int hdma_len = 0; // length to transfer on a  gdma
 	int hdma_len_ticked = 0; // how many total dma transfers we have done
@@ -281,5 +261,10 @@ struct Memory final
     // memory access function pointers
     std::array<MemoryTable,0x10> memory_table;   
 };
+
+extern template void Memory::write_io<false>(u16 addr,u8 v) noexcept;
+extern template void Memory::write_io<true>(u16 addr,u8 v) noexcept;
+
+#include <gb/memory.inl>
 
 }

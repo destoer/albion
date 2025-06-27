@@ -56,7 +56,8 @@ void standard_exception(N64& n64, u32 code)
 
     switch(code)
     {
-        case beyond_all_repair::TLBM:
+        case beyond_all_repair::TLBL:
+        case beyond_all_repair::TLBS:
         {
             // TODO: this is different in 64 bit
             if(double_fault)
@@ -356,7 +357,8 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
             // TODO: we need to cache this inside address translation if it trips
             if((status.ux && status.ksu == 0b10) || (status.sx && status.ksu == 0b01) || (status.kx && status.ksu == 0b00))
             {
-                unimplemented("64 bit addressing");
+                spdlog::warn("64 bit addressing");
+                // unimplemented("64 bit addressing");
             }
 
             check_interrupts(n64);
