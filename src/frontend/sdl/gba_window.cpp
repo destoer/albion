@@ -21,9 +21,12 @@ void GBAWindow::core_quit()
     exit(0);   
 }
 
-void GBAWindow::run_frame()
+void GBAWindow::run_frame(bool paused)
 {
-    gba.run();
+    if(!paused)
+    {
+        gba.run();
+    }
     render(gba.disp.screen.data());
 }
 

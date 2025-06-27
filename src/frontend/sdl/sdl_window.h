@@ -20,7 +20,7 @@ protected:
     // This should setup the playback with an appropiate buffer
     virtual void init(const std::string& filename,Playback& playback) = 0;
     virtual void pass_input_to_core() = 0;
-    virtual void run_frame() = 0;
+    virtual void run_frame(bool paused) = 0;
     virtual void handle_debug() = 0;
     virtual void core_quit() = 0;
     virtual void core_throttle() = 0;

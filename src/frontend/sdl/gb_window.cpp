@@ -23,9 +23,12 @@ void GameboyWindow::core_quit()
     exit(0);   
 }
 
-void GameboyWindow::run_frame()
+void GameboyWindow::run_frame(bool paused)
 {
-    gb.run();
+    if(!paused)
+    {
+        gb.run();
+    }
     render(gb.ppu.rendered.data());
 }
 

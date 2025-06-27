@@ -65,7 +65,7 @@ void Playback::push_samples(AudioBuffer& audio_buffer)
     // delay execution and let the queue drain
     while(SDL_GetAudioStreamQueued(stream) > (int)buffer_size)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }			
 
     if(!SDL_PutAudioStreamData(stream,audio_buffer.buffer.data(),buffer_size))

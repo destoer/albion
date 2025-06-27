@@ -23,16 +23,19 @@ void N64Window::core_quit()
     exit(0);   
 }
 
-void N64Window::run_frame()
+void N64Window::run_frame(bool paused)
 {
-    run(n64);
-
-    if(n64.size_change)
+    if(!paused)
     {
-        create_texture(n64.rdp.screen_x,n64.rdp.screen_y);
-        n64.size_change = false;
-    }
+        run(n64);
 
+        if(n64.size_change)
+        {
+            create_texture(n64.rdp.screen_x,n64.rdp.screen_y);
+            n64.size_change = false;
+        }
+    }
+    
     render(n64.rdp.screen.data());
 }
 

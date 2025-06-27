@@ -133,6 +133,10 @@ SDLMainWindow::~SDLMainWindow()
     SDL_Quit();  
 }
 
+bool window_in_focus(SDL_Window* window)
+{
+	return (SDL_GetWindowFlags(window) & SDL_WINDOW_OCCLUDED) != 0;
+}
 
 void SDLMainWindow::main(std::string filename, b32 start_debug)
 {
@@ -159,8 +163,9 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 		
 		pass_input_to_core();
 
-		run_frame();
 
+		run_frame(window_in_focus(window));
+		
 		switch(control)
 		{
 			case emu_control::quit_t:
