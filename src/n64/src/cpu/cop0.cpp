@@ -500,7 +500,7 @@ void write_cop0(N64 &n64, u64 v, u64 reg)
 
         default:
         {
-            printf("unimplemented cop0 write: %s(%zd)\n",beyond_all_repair::COP0_NAMES[reg],reg);
+            printf("unimplemented cop0 write: %s(%zd)\n",beyond_all_repair::COP0_NAMES[reg & 31],reg);
             exit(1);
         }
     }
