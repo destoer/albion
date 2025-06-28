@@ -17,9 +17,9 @@ set(FRONTEND "SDL")
 include("thirdparty/spdlog.cmake")
 # include("thirdparty/sdl3.cmake")
 
- set(GB "TRUE")
+# set(GB "TRUE")
 # set(GBA "TRUE")
-# set(N64 "TRUE")
+set(N64 "TRUE")
 
 # add_compile_options(-fsanitize=undefined)
 # add_link_options(-fsanitize=undefined)

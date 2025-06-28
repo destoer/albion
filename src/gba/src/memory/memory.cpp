@@ -134,7 +134,7 @@ void Mem::init(std::string filename)
 
             if(!read_bin(save_name,sram))
             {
-                throw std::runtime_error("Could not read sram");
+                spdlog::error("Could not read sram");
             }
             break;
         }
@@ -146,7 +146,7 @@ void Mem::init(std::string filename)
 
             if(!read_bin(save_name,sram))
             {
-                throw std::runtime_error("Could not read eeprom");
+                spdlog::error("Could not read eeprom");
             }
 
             addr_size = -1;

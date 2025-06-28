@@ -34,7 +34,7 @@ void Flash::init(size_t size, const std::string &rom_name)
 
     if(!read_bin(save_name,ram))
     {
-        throw std::runtime_error("Could not read flash");
+        spdlog::error("Could not read flash");
     }
 }
 
