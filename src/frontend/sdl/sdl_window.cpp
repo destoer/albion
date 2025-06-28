@@ -101,7 +101,6 @@ void SDLMainWindow::init_sdl(u32 x, u32 y)
 	renderer = SDL_CreateRenderer(window, NULL);
 
 	create_texture(x,y);
-	SDL_GL_SetSwapInterval(1);
 }
 
 void SDLMainWindow::render(const u32* data)
@@ -140,8 +139,6 @@ bool window_in_focus(SDL_Window* window)
 
 void SDLMainWindow::main(std::string filename, b32 start_debug)
 {
-	SDL_GL_SetSwapInterval(1);
-
 	//constexpr uint32_t fps = 60; 
 	//constexpr uint32_t screen_ticks_per_frame = 1000 / fps;
 	//uint64_t next_time = current_time() + screen_ticks_per_frame;
@@ -156,8 +153,12 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 
 	playback.start();
 
+	bool throttle = true;
+
     for(;;)
     {
+		const auto start = std::chrono::steady_clock::now();
+
 		fps_counter.reading_start();
 		auto control = input.handle_input(window);
 		
@@ -177,7 +178,7 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 			case emu_control::throttle_t:
 			{
 				//SDL_Delay(time_left(next_time));
-				SDL_GL_SetSwapInterval(1);
+				throttle = true;
 				core_throttle();
 				break;
 			}
@@ -185,7 +186,7 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 			case emu_control::unbound_t:
 			{
 				//SDL_Delay(time_left(next_time) / 8);
-				SDL_GL_SetSwapInterval(0);
+				throttle = false;
 				core_unbound();
 				break;
 			}
@@ -203,8 +204,17 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 
 		SDL_SetWindowTitle(window,fmt::format("albion: {:.2f}",fps_counter.get_fps()).c_str());
 
-		//next_time = current_time() + screen_ticks_per_frame;
-		
+
+		const auto end = std::chrono::steady_clock::now();
+		const s64 elapsed = std::chrono::duration_cast<std::chrono::nanoseconds> (end - start).count();
+		const s64 remain = ((1000'000'00 / 60) - elapsed) - overrun;
+
+
+		if(throttle && remain > 0)
+		{
+			SDL_DelayPrecise(remain);
+		}
+
 		// we hit a breakpoint go back to the prompt
 		handle_debug();
     }	
