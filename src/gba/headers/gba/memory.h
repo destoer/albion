@@ -14,8 +14,15 @@ namespace gameboyadvance
 // last accessed memory region
 enum class memory_region
 {
-    bios = 0,wram_board,wram_chip,
-    io,pal,vram,oam,rom,cart_backup,
+    bios,
+    wram_board,
+    wram_chip,
+    io,
+    pal,
+    vram,
+    oam,
+    rom,
+    cart_backup,
     undefined
 };
 
@@ -401,7 +408,7 @@ struct Mem final
     {
         {1,1,1}, // bios rom
         {1,1,1}, // wram 32k
-        {3,3,6}, // wram 256k
+        {1,1,2}, // wram 256k (Not correct, but some games fail when the waitstate is too high?)
         {1,1,1}, // io
         {1,1,2}, // pallete ram
         {1,1,2}, // vram
