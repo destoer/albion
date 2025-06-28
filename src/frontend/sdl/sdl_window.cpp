@@ -139,9 +139,6 @@ bool window_in_focus(SDL_Window* window)
 
 void SDLMainWindow::main(std::string filename, b32 start_debug)
 {
-	//constexpr uint32_t fps = 60; 
-	//constexpr uint32_t screen_ticks_per_frame = 1000 / fps;
-	//uint64_t next_time = current_time() + screen_ticks_per_frame;
 	init(filename,playback);
 
 	FpsCounter fps_counter;
@@ -177,7 +174,6 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 
 			case emu_control::throttle_t:
 			{
-				//SDL_Delay(time_left(next_time));
 				throttle = true;
 				core_throttle();
 				break;
@@ -185,7 +181,6 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 
 			case emu_control::unbound_t:
 			{
-				//SDL_Delay(time_left(next_time) / 8);
 				throttle = false;
 				core_unbound();
 				break;
@@ -207,8 +202,7 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 
 		const auto end = std::chrono::steady_clock::now();
 		const s64 elapsed = std::chrono::duration_cast<std::chrono::nanoseconds> (end - start).count();
-		const s64 remain = ((1000'000'00 / 60) - elapsed) - overrun;
-
+		const s64 remain = ((1000'000'00 / 60) - elapsed);
 
 		if(throttle && remain > 0)
 		{

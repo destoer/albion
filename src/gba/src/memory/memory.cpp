@@ -67,7 +67,10 @@ void Mem::init(std::string filename)
     this->filename = filename;
 
     // read out rom
-    read_bin(filename,rom);
+    if(!read_bin(filename,rom))
+    {
+        throw std::runtime_error("Could not read rom");
+    }
 
     std::fill(board_wram.begin(),board_wram.end(),0);
     std::fill(chip_wram.begin(),chip_wram.end(),0);
@@ -129,7 +132,10 @@ void Mem::init(std::string filename)
         {
             const auto save_name = get_save_file_name(filename);
 
-            read_bin(save_name,sram);
+            if(!read_bin(save_name,sram))
+            {
+                throw std::runtime_error("Could not read sram");
+            }
             break;
         }
 
@@ -138,7 +144,10 @@ void Mem::init(std::string filename)
             std::fill(sram.begin(),sram.end(),0xff);
             const auto save_name = get_save_file_name(filename);
 
-            read_bin(save_name,sram);
+            if(!read_bin(save_name,sram))
+            {
+                throw std::runtime_error("Could not read eeprom");
+            }
 
             addr_size = -1;
             state = eeprom_state::ready;
@@ -171,7 +180,10 @@ void Mem::init(std::string filename)
     frame_count = 0;
 
     // read and copy in the bios rom
-    read_bin("GBA.BIOS",bios_rom);
+    if(!read_bin("GBA.BIOS",bios_rom))
+    {
+        throw std::runtime_error("Could not read bios");
+    }
     //read_bin("gba_bios.bin",bios_rom);
 
     if(bios_rom.size() != 0x4000)
@@ -322,14 +334,20 @@ void Mem::save_cart_ram()
         case save_type::sram:
         {
             const auto save_name = get_save_file_name(filename);
-            write_bin(save_name,sram);
+            if(!write_bin(save_name,sram))
+            {
+                spdlog::error("Could not save sram");
+            }
             break;
         }
 
         case save_type::eeprom:
         {
             const auto save_name = get_save_file_name(filename);
-            write_bin(save_name,sram);            
+            if(!write_bin(save_name,sram))
+            {
+                spdlog::error("Could not save eeprom");
+            }           
             break;
         }
     }    

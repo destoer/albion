@@ -674,27 +674,30 @@ void noise_save_state(Noise &n, std::ofstream &fp)
 	file_write_var(fp,n);
 }
 
-void channel_load_state(Channel &c, std::ifstream &fp)
+dtr_res channel_load_state(Channel &c, std::ifstream &fp)
 {
-	file_read_var(fp,c);
+	const auto res = file_read_var(fp,c);
     c.duty_idx &= 7;
     c.cur_duty &= 3;
+
+    return res;
 }
 
-void sweep_load_state(Sweep &s, std::ifstream &fp)
+dtr_res sweep_load_state(Sweep &s, std::ifstream &fp)
 {
-	file_read_var(fp,s);
+	return file_read_var(fp,s);
 }
 
-void wave_load_state(Wave &w, std::ifstream &fp)
+dtr_res wave_load_state(Wave &w, std::ifstream &fp)
 {
-	file_read_var(fp,w);
+	return file_read_var(fp,w);
 }
 
-void noise_load_state(Noise &n, std::ifstream &fp)
+dtr_res noise_load_state(Noise &n, std::ifstream &fp)
 {
-	file_read_var(fp,n);
+	const auto res = file_read_var(fp,n);
     n.divisor_idx &= 7;
+    return res;
 }
 
 
@@ -753,58 +756,59 @@ void Psg::save_state(std::ofstream &fp)
     sweep_save_state(sweep,fp);
 }
 
-void Psg::load_state(std::ifstream &fp)
+dtr_res Psg::load_state(std::ifstream &fp)
 {
-	file_read_var(fp,mode);
+	dtr_res err = file_read_var(fp,mode);
 
 
-	file_read_var(fp,sound_enabled);
+	err |= file_read_var(fp,sound_enabled);
 
-	file_read_var(fp,sequencer_step);
+	err |= file_read_var(fp,sequencer_step);
 
 	// backing regs
 
 	// nr1x
-	file_read_var(fp,nr10);
-	file_read_var(fp,nr11);
-    file_read_var(fp,nr12);
-	file_read_var(fp,nr13);
-	file_read_var(fp,nr14);
+	err |= file_read_var(fp,nr10);
+	err |= file_read_var(fp,nr11);
+    err |= file_read_var(fp,nr12);
+	err |= file_read_var(fp,nr13);
+	err |= file_read_var(fp,nr14);
 
 	// nr2x
-    file_read_var(fp,nr21);
-	file_read_var(fp,nr22);
-	file_read_var(fp,nr23);
-	file_read_var(fp,nr24);
+    err |= file_read_var(fp,nr21);
+	err |= file_read_var(fp,nr22);
+	err |= file_read_var(fp,nr23);
+	err |= file_read_var(fp,nr24);
 
 	// nr3x
-	file_read_var(fp,nr30);
-	file_read_var(fp,nr31);
-	file_read_var(fp,nr32);
-	file_read_var(fp,nr33);
-	file_read_var(fp,nr34);
+	err |= file_read_var(fp,nr30);
+	err |= file_read_var(fp,nr31);
+	err |= file_read_var(fp,nr32);
+	err |= file_read_var(fp,nr33);
+	err |= file_read_var(fp,nr34);
 
 	// nr4x
-	file_read_var(fp,nr41);
-	file_read_var(fp,nr42);
-	file_read_var(fp,nr43);
-	file_read_var(fp,nr44);	
+	err |= file_read_var(fp,nr41);
+	err |= file_read_var(fp,nr42);
+	err |= file_read_var(fp,nr43);
+	err |= file_read_var(fp,nr44);	
 
 	// nr5x
-	file_read_var(fp,nr50);
-	file_read_var(fp,nr51);
-	file_read_var(fp,nr52);
+	err |= file_read_var(fp,nr50);
+	err |= file_read_var(fp,nr51);
+	err |= file_read_var(fp,nr52);
 
     // load in channel data
     for(int i = 0; i < 4; i++)
     {
-        channel_load_state(channels[i],fp);
+        err |= channel_load_state(channels[i],fp);
     }
 
-    wave_load_state(wave,fp);
-    noise_load_state(noise,fp);
-    sweep_load_state(sweep,fp);
+    err |= wave_load_state(wave,fp);
+    err |= noise_load_state(noise,fp);
+    err |= sweep_load_state(sweep,fp);
 
+    return err;
 }
 
 }

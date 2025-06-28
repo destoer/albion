@@ -260,7 +260,10 @@ void Memory::init(std::string rom_name, bool with_rom, bool use_bios)
 {
 	if(with_rom)
 	{
-		read_bin(rom_name,rom); // read our rom in
+		if(!read_bin(rom_name,rom)) // read our rom in
+		{
+			throw std::runtime_error("Could not load rom");
+		}
 
 		// if we have a ips patch with the same name try loading it
 		const auto ips_file = remove_ext(rom_name) + ".ips";
@@ -284,7 +287,7 @@ void Memory::init(std::string rom_name, bool with_rom, bool use_bios)
 	{
 		std::string bios_file = rom_cgb_enabled() ? "gbc_bios.bin" : "dmg_bios.bin";
 
-		if(read_bin(bios_file,bios))
+		if(!read_bin(bios_file,bios))
 		{
 			throw std::runtime_error(fmt::format("could not load bios file: {}!",bios_file));
 		}

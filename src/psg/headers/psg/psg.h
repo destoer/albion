@@ -139,7 +139,7 @@ struct Psg
 	void disable_sound() noexcept;
 
 	void save_state(std::ofstream &fp);
-	void load_state(std::ifstream &fp);
+	dtr_res load_state(std::ifstream &fp);
 
 	bool chan_enabled(int chan) const noexcept
 	{

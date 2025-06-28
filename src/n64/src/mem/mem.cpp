@@ -98,10 +98,9 @@ void write_physical_table(Mem& mem,const u32 offset)
 void reset_mem(Mem &mem, const std::string &filename)
 {
     // read rom in and hle the pif rom
-    if(read_bin(filename,mem.rom))
+    if(!read_bin(filename,mem.rom))
     {
         const auto err = fmt::format("could not open file: {}\n",filename);
-
         throw std::runtime_error(err);         
     }
 

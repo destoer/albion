@@ -107,7 +107,7 @@ struct Memory final
 
     // save states
     void save_state(std::ofstream &fp);
-    void load_state(std::ifstream &fp);
+    dtr_res load_state(std::ifstream &fp);
 
     template<bool DEBUG_ENABLE>
     void do_hdma() noexcept;

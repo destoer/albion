@@ -9,7 +9,7 @@ public:
     void init();
 
     void save_state(std::ofstream &fp);
-    void load_state(std::ifstream &fp);    
+    dtr_res load_state(std::ifstream &fp);    
 
     void tick(uint32_t cycles);
     void delay_tick(uint32_t cycles);
@@ -202,9 +202,11 @@ void Scheduler<SIZE,event_type>::save_state(std::ofstream &fp)
 }
 
 template<size_t SIZE,typename event_type>
-void Scheduler<SIZE,event_type>::load_state(std::ifstream &fp)
+dtr_res Scheduler<SIZE,event_type>::load_state(std::ifstream &fp)
 {
-    file_read_var(fp,min_timestamp);
-    file_read_var(fp,timestamp);
-    event_list.load_state(fp);
+    dtr_res err = file_read_var(fp,min_timestamp);
+    err |= file_read_var(fp,timestamp);
+    err |= event_list.load_state(fp);
+
+    return err;
 }

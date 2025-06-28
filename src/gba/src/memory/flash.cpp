@@ -32,7 +32,10 @@ void Flash::init(size_t size, const std::string &rom_name)
 
     const auto save_name = get_save_file_name(filename);
 
-    read_bin(save_name,ram);
+    if(!read_bin(save_name,ram))
+    {
+        throw std::runtime_error("Could not read flash");
+    }
 }
 
 
@@ -256,7 +259,10 @@ void Flash::save_ram()
     const auto save_name = get_save_file_name(filename);
 
 
-    write_bin(save_name,ram);
+    if(!write_bin(save_name,ram))
+    {
+        spdlog::error("Could not write flash");
+    }
 }
 
 }

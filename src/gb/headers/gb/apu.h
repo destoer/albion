@@ -27,7 +27,7 @@ struct Apu
 	void enable_sound() noexcept;
 
 	void save_state(std::ofstream &fp);
-	void load_state(std::ifstream &fp);
+	dtr_res load_state(std::ifstream &fp);
 
 	void insert_chan1_period_event()
 	{

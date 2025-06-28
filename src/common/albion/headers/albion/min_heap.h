@@ -59,7 +59,7 @@ public:
     MinHeap();
 
     void save_state(std::ofstream &fp);
-    void load_state(std::ifstream &fp);
+    dtr_res load_state(std::ifstream &fp);
 
     EventNode<event_type> peek() const;
     void pop();
@@ -360,24 +360,23 @@ void MinHeap<SIZE,event_type>::save_state(std::ofstream &fp)
 }
 
 template<u32 SIZE,typename event_type>
-void MinHeap<SIZE,event_type>::load_state(std::ifstream &fp)
+dtr_res MinHeap<SIZE,event_type>::load_state(std::ifstream &fp)
 {
-    file_read_arr(fp,type_idx.data(),sizeof(type_idx[0]) * type_idx.size());
+    dtr_res err = file_read_arr(fp,type_idx.data(),sizeof(type_idx[0]) * type_idx.size());
   
-
-    
-    file_read_arr(fp,buf.data(),sizeof(buf[0]) * buf.size());
+    err |= file_read_arr(fp,buf.data(),sizeof(buf[0]) * buf.size());
 
     // read idx back in so we can reconstruct our ptrs
     std::array<size_t,SIZE> idx_list;
-    file_read_arr(fp,idx_list.data(),sizeof(idx_list[0]) * idx_list.size());
+    err |= file_read_arr(fp,idx_list.data(),sizeof(idx_list[0]) * idx_list.size());
 
     // verify idx bounds 
     for(const auto &x: idx_list)
     {
         if(x >= SIZE)
         {
-            throw std::runtime_error("minheap invalid heap idx");
+            spdlog::error("minheap invalid heap idx");
+            return dtr_res::err;
         }
     }
 
@@ -386,19 +385,21 @@ void MinHeap<SIZE,event_type>::load_state(std::ifstream &fp)
         heap[i] = &buf[idx_list[i]];
     }
 
-    file_read_var(fp,len);
+    err |= file_read_var(fp,len);
 
 
     if(len > SIZE)
     {
-        throw std::runtime_error("minheap invalid len");
+        spdlog::error("minheap invalid len");
+        return dtr_res::err;
     }
 
     for(auto &x: type_idx)
     {
         if(x >= len && x != IDX_INVALID)
         {
-            throw std::runtime_error("minheapinvalid type idx");
+            spdlog::error("minheapinvalid type idx");
+            return dtr_res::err;
         }
     }
 
@@ -406,7 +407,10 @@ void MinHeap<SIZE,event_type>::load_state(std::ifstream &fp)
     {
         if(u32(x->type) >= SIZE)
         {
-            throw std::runtime_error("minheap invalid event type");
+            spdlog::error("minheap invalid event type");
+            return dtr_res::err;
         }
     }
+
+    return err;
 }

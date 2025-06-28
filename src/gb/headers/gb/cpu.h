@@ -24,6 +24,12 @@ struct Cpu final
 
     bool get_double() const;
 
+    void panic(const std::string& err)
+    {
+        spdlog::error("{}",err);
+        panicked = false;
+    }
+
     void insert_new_cycle_event() noexcept;
 
     void insert_new_timer_event() noexcept;
@@ -67,6 +73,8 @@ struct Cpu final
     // freq bits for internal timer
     static constexpr int freq_arr[4] = {9,3,5,7};
 
+
+    bool panicked = false;
 
     // serial
     int serial_cyc;
@@ -141,7 +149,7 @@ struct Cpu final
 
     // save states
     void save_state(std::ofstream &fp);
-    void load_state(std::ifstream &fp);
+    dtr_res load_state(std::ifstream &fp);
 
     Memory &mem;
     Apu &apu;

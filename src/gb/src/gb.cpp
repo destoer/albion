@@ -43,14 +43,13 @@ void GB::change_breakpoint_enable(bool enabled)
 // need to do alot more integrity checking on data in these :)
 void GB::save_state(std::string filename)
 {
-
 	std::cout << "save state: " << filename << "\n";
-try
-{
+
+
 	std::ofstream fp(filename,std::ios::binary);
 	if(!fp)
 	{
-		throw std::runtime_error("could not open file");
+		cpu.panic("Could not save state to file");
 	}
 
 
@@ -63,46 +62,32 @@ try
 	fp.close();
 }
 
-catch(std::exception &ex)
-{
-	std::string err = fmt::format("failed to save state: {}",ex.what());
-	spdlog::error("{}",err);
-	throw std::runtime_error(err);
-}
-}
-
 
 void GB::load_state(std::string filename)
 {
 	std::cout << "load state: " << filename << "\n";
 
-try
-{	
+	dtr_res err = dtr_res::ok;
+
 	std::ifstream fp(filename,std::ios::binary);
 	if(!fp)
 	{
-		throw std::runtime_error("could not open file");
+		cpu.panic("could not open save state file");
+		return;
 	}
 
-	cpu.load_state(fp);
-	mem.load_state(fp);
-	ppu.load_state(fp);
-	apu.load_state(fp);
-	scheduler.load_state(fp);
+	err |= cpu.load_state(fp);
+	err |= mem.load_state(fp);
+	err |= ppu.load_state(fp);
+	err |= apu.load_state(fp);
+	err |= scheduler.load_state(fp);
 
 	fp.close();
-}
 
-
-catch(std::exception &ex)
-{
-	// put system back into a safe state
-	reset("",false,false);
-	std::string err = fmt::format("failed to load state: {}",ex.what());
-	spdlog::error("{}",err);
-	throw std::runtime_error(err);
-}
-
+	if(!err)
+	{
+		cpu.panic("Could not load state");
+	}
 }
 
 void GB::handle_input(Controller& controller)
@@ -187,6 +172,11 @@ void GB::key_pressed(button b)
 // run a frame
 void GB::run()
 {
+	if(cpu.panicked)
+	{
+		return;
+	}
+
     ppu.new_vblank = false;
 	cpu.cycle_frame = false;
 	cpu.insert_new_cycle_event();

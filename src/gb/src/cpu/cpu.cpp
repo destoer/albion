@@ -98,6 +98,8 @@ void Cpu::init(bool use_bios)
 	serial_cnt = 0;
 
 	insert_new_timer_event();
+
+	panicked = false;
 }
 
 

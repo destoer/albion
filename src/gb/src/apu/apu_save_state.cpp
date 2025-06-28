@@ -12,10 +12,12 @@ namespace gameboy_psg
 namespace gameboy
 {
 
-void Apu::load_state(std::ifstream &fp)
+dtr_res Apu::load_state(std::ifstream &fp)
 {
-	file_read_var(fp,down_sample_cnt);
-	psg.load_state(fp);
+	dtr_res err = file_read_var(fp,down_sample_cnt);
+	err |= psg.load_state(fp);
+
+	return err;
 }
 
 
