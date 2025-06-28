@@ -18,8 +18,8 @@ include("thirdparty/spdlog.cmake")
 # include("thirdparty/sdl3.cmake")
 
 # set(GB "TRUE")
-# set(GBA "TRUE")
-set(N64 "TRUE")
+set(GBA "TRUE")
+# set(N64 "TRUE")
 
 # add_compile_options(-fsanitize=undefined)
 # add_link_options(-fsanitize=undefined)
@@ -63,7 +63,7 @@ else()
 	# prevent O3 being injected
 	SET( CMAKE_CXX_FLAGS_DEBUG  "")
 	SET( CMAKE_CXX_FLAGS_RELEASE  "")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -march=native -pthread -O3 -fomit-frame-pointer -Wno-missing-braces -fmax-errors=15 -isystem src/common/thirdparty")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Werror -Wall -Wextra -march=native -pthread -O1 -fomit-frame-pointer -Wno-missing-braces -fmax-errors=15 -isystem src/common/thirdparty")
 endif()
 
 add_subdirectory("destoer-lib")

@@ -195,19 +195,18 @@ void SDLMainWindow::main(std::string filename, b32 start_debug)
 			case emu_control::none_t: break;
 		}
 
-		fps_counter.reading_end();
-
-		SDL_SetWindowTitle(window,fmt::format("albion: {:.2f}",fps_counter.get_fps()).c_str());
-
-
 		const auto end = std::chrono::steady_clock::now();
 		const s64 elapsed = std::chrono::duration_cast<std::chrono::nanoseconds> (end - start).count();
-		const s64 remain = ((1000'000'00 / 60) - elapsed);
+		const s64 remain = ((1000'000'000 / 60) - elapsed);
 
 		if(throttle && remain > 0)
 		{
 			SDL_DelayPrecise(remain);
 		}
+
+		fps_counter.reading_end();
+		SDL_SetWindowTitle(window,fmt::format("albion: {:.2f}",fps_counter.get_fps()).c_str());
+
 
 		// we hit a breakpoint go back to the prompt
 		handle_debug();
